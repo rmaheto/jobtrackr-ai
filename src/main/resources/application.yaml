@@ -1,0 +1,70 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      persistent: false
+
+spring:
+  application:
+    name: jobtrackr-ai
+  profiles:
+    active: desktop
+  datasource:
+#    url: jdbc:postgresql://host.docker.internal:5432/jobtrackr-db
+    url: jdbc:postgresql://localhost:5432/jobtrackr-db
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD.key}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  ai:
+    openai:
+      api-key: ${OPEN_API.key}
+      chat:
+        options:
+          model: gpt-4o
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: openid, profile, email
+
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            scope: read:user, user:email
+
+          facebook:
+            client-id: ${FACEBOOK_CLIENT_ID}
+            client-secret: ${FACEBOOK_CLIENT_SECRET}
+            scope: public_profile, email
+
+          linkedin:
+            client-id: ${LINKEDIN_CLIENT_ID}
+            client-secret: ${LINKEDIN_CLIENT_SECRET}
+            scope: r_liteprofile, r_emailaddress
+            authorization-grant-type: authorization_code
+            redirect-uri: "login/oauth2/code/{registrationId}"
+            provider: linkedin
+
+        provider:
+          linkedin:
+            authorization-uri: https://www.linkedin.com/oauth/v2/authorization
+            token-uri: https://www.linkedin.com/oauth/v2/accessToken
+            user-info-uri: https://api.linkedin.com/v2/me
+            user-name-attribute: id
+jwt:
+  secret: ${ENCRYPTION_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+
