@@ -7,10 +7,12 @@ import com.codemaniac.jobtrackrai.model.Audit;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.jpa.domain.Specification;
 
 public class JobApplicationSpecifications {
 
@@ -20,26 +22,53 @@ public class JobApplicationSpecifications {
 
   public static Specification<JobApplication> forSearch(
       final JobApplicationSearchRequest request, final Long userId) {
+
     return (root, query, cb) -> {
       final List<Predicate> predicates = new ArrayList<>();
 
+      // Always filter by userId and active records
       predicates.add(cb.equal(root.get("user").get("id"), userId));
       predicates.add(cb.equal(root.get("audit").get("recordStatus"), Audit.RECORD_STATUS_ACTIVE));
 
+      // Global searchTerm across multiple fields
+      addSearchTerm(cb, root, predicates, request.getSearchTerm());
+
+      // Individual field filters
       addLikeIfPresent(cb, root, predicates, "company", request.getCompany());
       addLikeIfPresent(cb, root, predicates, "role", request.getRole());
-      addEqualIfPresent(cb, root, predicates, "location", request.getLocation());
-      addEqualIfPresent(cb, root, predicates, "jobType", request.getJobType());
       addLikeIfPresent(cb, root, predicates, "skills", request.getSkills());
 
-      Optional.ofNullable(request.getStatus())
-          .ifPresent(
-              status -> predicates.add(cb.equal(root.get("status"), Status.valueOf(status))));
+      addEqualIfPresent(cb, root, predicates, "location", request.getLocation());
+      addEqualIfPresent(cb, root, predicates, "jobType", request.getJobType());
 
-      addDateRange(cb, root, predicates, request);
+      Optional.ofNullable(request.getStatus())
+          .map(String::toUpperCase)
+          .ifPresent(status -> predicates.add(cb.equal(root.get("status"), Status.valueOf(status))));
+
+      // Date filters
+      addDateRange(cb, root, predicates, request.getFromDate(), request.getToDate());
 
       return cb.and(predicates.toArray(new Predicate[0]));
     };
+  }
+
+  private static void addSearchTerm(
+      final CriteriaBuilder cb,
+      final Root<JobApplication> root,
+      final List<Predicate> predicateList,
+      final String searchTerm) {
+    Optional.ofNullable(searchTerm)
+        .filter(term -> !term.isBlank())
+        .ifPresent(term -> {
+          final String likePattern = "%" + term.toLowerCase() + "%";
+          final Predicate companyLike = cb.like(cb.lower(root.get("company")), likePattern);
+          final Predicate roleLike = cb.like(cb.lower(root.get("role")), likePattern);
+          final Predicate locationLike = cb.like(cb.lower(root.get("location")), likePattern);
+          final Predicate skillsLike = cb.like(cb.lower(root.get("skills")), likePattern);
+
+          // OR across multiple fields
+          predicateList.add(cb.or(companyLike, roleLike, locationLike, skillsLike));
+        });
   }
 
   private static void addLikeIfPresent(
@@ -49,6 +78,7 @@ public class JobApplicationSpecifications {
       final String field,
       final String val) {
     Optional.ofNullable(val)
+        .filter(v -> !v.isBlank())
         .map(v -> cb.like(cb.lower(root.get(field)), "%" + v.toLowerCase() + "%"))
         .ifPresent(predicateList::add);
   }
@@ -59,20 +89,23 @@ public class JobApplicationSpecifications {
       final List<Predicate> predicateList,
       final String field,
       final Object val) {
-    Optional.ofNullable(val).map(v -> cb.equal(root.get(field), v)).ifPresent(predicateList::add);
+    Optional.ofNullable(val)
+        .ifPresent(v -> predicateList.add(cb.equal(root.get(field), v)));
   }
 
   private static void addDateRange(
       final CriteriaBuilder cb,
       final Root<JobApplication> root,
       final List<Predicate> predicateList,
-      final JobApplicationSearchRequest req) {
-    if (req.getFromDate() != null && req.getToDate() != null) {
-      predicateList.add(cb.between(root.get(APPLIED_DATE), req.getFromDate(), req.getToDate()));
-    } else if (req.getFromDate() != null) {
-      predicateList.add(cb.greaterThanOrEqualTo(root.get(APPLIED_DATE), req.getFromDate()));
-    } else if (req.getToDate() != null) {
-      predicateList.add(cb.lessThanOrEqualTo(root.get(APPLIED_DATE), req.getToDate()));
+      final LocalDate fromDate,
+      final LocalDate toDate) {
+
+    if (fromDate != null && toDate != null) {
+      predicateList.add(cb.between(root.get(APPLIED_DATE), fromDate, toDate));
+    } else if (fromDate != null) {
+      predicateList.add(cb.greaterThanOrEqualTo(root.get(APPLIED_DATE), fromDate));
+    } else if (toDate != null) {
+      predicateList.add(cb.lessThanOrEqualTo(root.get(APPLIED_DATE), toDate));
     }
   }
 }

@@ -32,6 +32,7 @@ public class JwtTokenService {
         .setSubject(user.getExternalId())
         .claim("email", user.getEmail())
         .claim("name", user.getName())
+        .claim("pictureUrl", user.getPictureUrl())
         .setIssuedAt(now)
         .setExpiration(expiry)
         .signWith(key, SignatureAlgorithm.HS256)

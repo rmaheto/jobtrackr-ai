@@ -1,10 +1,10 @@
 package com.codemaniac.jobtrackrai.entity;
 
-import com.codemaniac.jobtrackrai.enums.Status;
+import com.codemaniac.jobtrackrai.enums.ResumeFileType;
 import com.codemaniac.jobtrackrai.interceptor.AuditInterceptor;
 import com.codemaniac.jobtrackrai.model.Audit;
 import com.codemaniac.jobtrackrai.model.Auditable;
-import jakarta.persistence.Column;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -16,8 +16,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,43 +27,32 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "job_applications")
+@Table(name = "resumes")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @EntityListeners(AuditInterceptor.class)
-public class JobApplication implements Auditable {
+public class Resume implements Auditable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  private String company;
-  private String role;
-  private String location;
-  private String jobType;
-  private String skills;
-  private String salary;
-  private String jobLink;
+  private String originalName;
 
-  @Column(columnDefinition = "TEXT")
-  private String description;
+  private String s3Key;
 
   @Enumerated(EnumType.STRING)
-  private Status status;
+  private ResumeFileType fileType;
 
-  private LocalDate appliedDate;
-  private String contactPersonName;
-  private String contactPersonEmail;
+  private Long size;
 
-  @Column(columnDefinition = "TEXT")
-  private String notes;
+  private Integer linkedApplications = 0;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "resume_id")
-  private Resume resume;
+  @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = false)
+  private List<JobApplication> jobApplications = new ArrayList<>();
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
@@ -70,5 +61,16 @@ public class JobApplication implements Auditable {
   @Embedded
   private Audit audit = new Audit();
 
+  public void addJobApplication(final JobApplication application) {
+    jobApplications.add(application);
+    application.setResume(this);
+    this.linkedApplications = (this.linkedApplications == null ? 1 : this.linkedApplications + 1);
+  }
+
+  public void removeJobApplication(final JobApplication application) {
+    jobApplications.remove(application);
+    application.setResume(null);
+    this.linkedApplications = Math.max(0, this.linkedApplications - 1);
+  }
 }
 

@@ -2,9 +2,12 @@ package com.codemaniac.jobtrackrai.service;
 
 import com.codemaniac.jobtrackrai.dto.DashboardResponse;
 import com.codemaniac.jobtrackrai.dto.RecentApplicationDto;
+import com.codemaniac.jobtrackrai.entity.JobApplication;
 import com.codemaniac.jobtrackrai.enums.Status;
 import com.codemaniac.jobtrackrai.model.Audit;
 import com.codemaniac.jobtrackrai.repository.JobApplicationRepository;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,18 +22,21 @@ public class DashboardService {
 
   public DashboardResponse getDashboardData() {
     final var user = currentUserService.getCurrentUser();
-    final var apps =
-        repository.findLiteByUserIdAndStatus(user.getId(), Audit.RECORD_STATUS_ACTIVE);
+    final List<JobApplication> apps =
+        repository.findByUserIdAndAudit_RecordStatusOrderByAudit_CreateTimestampDesc(
+            user.getId(), Audit.RECORD_STATUS_ACTIVE);
 
     final long total = apps.size();
-    final long applied = apps.stream().filter(a -> a.getStatus() == Status.APPLIED).count();
-    final long interviews = apps.stream().filter(a -> a.getStatus() == Status.INTERVIEW).count();
-    final long offers = apps.stream().filter(a -> a.getStatus() == Status.OFFER).count();
-    final long rejected = apps.stream().filter(a -> a.getStatus() == Status.REJECTED).count();
+    final Map<Status, Long> counts =
+        apps.stream()
+            .collect(Collectors.groupingBy(JobApplication::getStatus, Collectors.counting()));
+    final long applied = counts.getOrDefault(Status.APPLIED, 0L);
+    final long interviews = counts.getOrDefault(Status.INTERVIEW, 0L);
+    final long offers = counts.getOrDefault(Status.OFFER, 0L);
+    final long rejected = counts.getOrDefault(Status.REJECTED, 0L);
 
     final List<RecentApplicationDto> recent =
         apps.stream()
-            .sorted((a, b) -> b.getAppliedDate().compareTo(a.getAppliedDate()))
             .limit(5)
             .map(
                 a ->

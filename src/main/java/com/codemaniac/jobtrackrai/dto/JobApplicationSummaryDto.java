@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class JobApplicationLiteDto {
+public class JobApplicationSummaryDto {
   private Long id;
   private String company;
   private String role;
