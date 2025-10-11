@@ -10,6 +10,10 @@ import com.codemaniac.jobtrackrai.mapper.ResumeMapper;
 import com.codemaniac.jobtrackrai.repository.ResumeRepository;
 import com.codemaniac.jobtrackrai.service.aws.S3Service;
 import jakarta.annotation.Nonnull;
+import java.io.InputStream;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +21,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.InputStream;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

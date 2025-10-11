@@ -22,4 +22,3 @@ public class ResumeDto {
   private String previewUrl;
   private List<JobApplicationSummaryDto> jobApplications;
 }
-

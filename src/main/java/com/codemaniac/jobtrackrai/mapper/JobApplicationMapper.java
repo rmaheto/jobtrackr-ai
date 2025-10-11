@@ -13,7 +13,7 @@ public interface JobApplicationMapper {
 
   JobApplication toEntity(JobApplicationRequest request);
 
-  @Mapping(source="resume.id", target = "linkedResumeId")
+  @Mapping(source = "resume.id", target = "linkedResumeId")
   JobApplicationDto toDto(JobApplication entity);
 
   List<JobApplicationDto> toDtoList(List<JobApplication> entities);
@@ -21,7 +21,6 @@ public interface JobApplicationMapper {
   default String map(final Optional<String> value) {
     return value.orElse(null);
   }
-
 
   default Optional<String> map(final String value) {
     return Optional.ofNullable(value);

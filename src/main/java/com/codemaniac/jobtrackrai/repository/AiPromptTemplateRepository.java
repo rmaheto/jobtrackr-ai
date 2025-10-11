@@ -9,4 +9,3 @@ import org.springframework.stereotype.Repository;
 public interface AiPromptTemplateRepository extends JpaRepository<AiPromptTemplate, Long> {
   Optional<AiPromptTemplate> findByCode(String code);
 }
-

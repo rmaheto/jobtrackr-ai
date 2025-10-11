@@ -27,4 +27,3 @@ public class JobApplicationDto {
   private String notes;
   private Long linkedResumeId;
 }
-

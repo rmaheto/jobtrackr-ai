@@ -43,10 +43,9 @@ public class User implements Auditable {
   private String name;
   private String pictureUrl;
   private String provider;
+
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<JobApplication> applications = new ArrayList<>();
 
-  @Embedded
-  private Audit audit = new Audit();
+  @Embedded private Audit audit = new Audit();
 }
-

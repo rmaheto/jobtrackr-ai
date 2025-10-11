@@ -22,4 +22,3 @@ public class JobApplicationSearchRequest {
   private LocalDate fromDate;
   private LocalDate toDate;
 }
-

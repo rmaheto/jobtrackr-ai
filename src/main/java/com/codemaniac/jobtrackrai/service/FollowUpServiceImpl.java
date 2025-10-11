@@ -8,10 +8,8 @@ import com.codemaniac.jobtrackrai.exception.NotFoundException;
 import com.codemaniac.jobtrackrai.mapper.FollowUpMapper;
 import com.codemaniac.jobtrackrai.repository.FollowUpRepository;
 import com.codemaniac.jobtrackrai.repository.JobApplicationRepository;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,13 +50,12 @@ public class FollowUpServiceImpl implements FollowUpService {
   }
 
   @Transactional(readOnly = true)
-  public List<FollowUpDto> findFollowUpsBetween(final OffsetDateTime from, final OffsetDateTime to) {
-    return followUpRepository.findByScheduledAtBetween(from, to)
-        .stream()
+  public List<FollowUpDto> findFollowUpsBetween(
+      final OffsetDateTime from, final OffsetDateTime to) {
+    return followUpRepository.findByScheduledAtBetween(from, to).stream()
         .map(followUpMapper::toDto)
         .toList();
   }
-
 
   @Transactional
   public FollowUpDto markCompleted(final Long followUpId) {

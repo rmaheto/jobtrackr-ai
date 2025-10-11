@@ -1,7 +1,8 @@
 package com.codemaniac.jobtrackrai.enums;
 
 public enum ResumeFileType {
-  PDF, DOCX;
+  PDF,
+  DOCX;
 
   public static ResumeFileType fromMimeType(final String mimeType) {
     return switch (mimeType) {
@@ -11,4 +12,3 @@ public enum ResumeFileType {
     };
   }
 }
-

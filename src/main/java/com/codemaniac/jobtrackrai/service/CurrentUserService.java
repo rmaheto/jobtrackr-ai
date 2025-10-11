@@ -20,9 +20,7 @@ public class CurrentUserService {
 
   private final UserRepository userRepository;
 
-  /**
-   * Retrieve the currently authenticated user based on JWT.
-   */
+  /** Retrieve the currently authenticated user based on JWT. */
   public User getCurrentUser() {
     final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -39,27 +37,27 @@ public class CurrentUserService {
 
     return userRepository
         .findByEmail(email)
-        .orElseGet(() ->
-            userRepository.save(
-                User.builder()
-                    .externalId(externalId)
-                    .email(email)
-                    .name(name)
-                    .pictureUrl(pictureUrl)
-                    .build()
-            )
-        );
+        .orElseGet(
+            () ->
+                userRepository.save(
+                    User.builder()
+                        .externalId(externalId)
+                        .email(email)
+                        .name(name)
+                        .pictureUrl(pictureUrl)
+                        .build()));
   }
 
   /**
-   * Creates or updates a user record when authenticated via OAuth2 login.
-   * All provider-specific normalization is done by CustomOAuth2UserService.
+   * Creates or updates a user record when authenticated via OAuth2 login. All provider-specific
+   * normalization is done by CustomOAuth2UserService.
    */
   public User getOrCreateFromOAuth2(final OAuth2User oAuth2User) {
     final String externalId =
-        String.valueOf(oAuth2User.getAttribute("sub") != null
-            ? oAuth2User.getAttribute("sub")
-            : oAuth2User.getName());
+        String.valueOf(
+            oAuth2User.getAttribute("sub") != null
+                ? oAuth2User.getAttribute("sub")
+                : oAuth2User.getName());
 
     final String email = oAuth2User.getAttribute("email");
     final String name = oAuth2User.getAttribute("name");
@@ -71,21 +69,22 @@ public class CurrentUserService {
     return userRepository
         .findByEmail(email)
         .map(existing -> updateIfChanged(existing, name, pictureUrl, provider))
-        .orElseGet(() -> {
-          log.info("Provisioning new user: {}", email);
-          return userRepository.save(
-              User.builder()
-                  .externalId(externalId)
-                  .email(email)
-                  .name(name)
-                  .pictureUrl(pictureUrl)
-                  .provider(provider)
-                  .build()
-          );
-        });
+        .orElseGet(
+            () -> {
+              log.info("Provisioning new user: {}", email);
+              return userRepository.save(
+                  User.builder()
+                      .externalId(externalId)
+                      .email(email)
+                      .name(name)
+                      .pictureUrl(pictureUrl)
+                      .provider(provider)
+                      .build());
+            });
   }
 
-  private User updateIfChanged(final User existing, final String name, final String pictureUrl, final String provider) {
+  private User updateIfChanged(
+      final User existing, final String name, final String pictureUrl, final String provider) {
     boolean updated = false;
 
     if (name != null && !name.equals(existing.getName())) {
@@ -106,4 +105,3 @@ public class CurrentUserService {
     return updated ? userRepository.save(existing) : existing;
   }
 }
-

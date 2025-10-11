@@ -1,6 +1,5 @@
 package com.codemaniac.jobtrackrai.service;
 
-
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.LoadState;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +13,8 @@ public class JobScraperService {
     log.info("Scraping job description from {}", url);
 
     try (final Playwright playwright = Playwright.create()) {
-      final Browser browser = playwright.chromium().launch(
-          new BrowserType.LaunchOptions().setHeadless(true)
-      );
+      final Browser browser =
+          playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
       final Page page = browser.newPage();
 
       // Navigate to job URL
@@ -41,5 +39,3 @@ public class JobScraperService {
     }
   }
 }
-
-

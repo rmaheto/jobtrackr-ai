@@ -67,8 +67,5 @@ public class JobApplication implements Auditable {
   @JoinColumn(name = "user_id")
   private User user;
 
-  @Embedded
-  private Audit audit = new Audit();
-
+  @Embedded private Audit audit = new Audit();
 }
-

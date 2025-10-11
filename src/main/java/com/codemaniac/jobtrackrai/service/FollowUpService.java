@@ -7,8 +7,12 @@ import java.util.List;
 
 public interface FollowUpService {
   FollowUpDto scheduleFollowUp(Long applicationId, FollowUpRequest request);
+
   List<FollowUpDto> getFollowUps(Long applicationId);
+
   public List<FollowUpDto> findFollowUpsBetween(final OffsetDateTime from, final OffsetDateTime to);
+
   FollowUpDto markCompleted(Long followUpId);
+
   void deleteFollowUp(Long followUpId);
 }

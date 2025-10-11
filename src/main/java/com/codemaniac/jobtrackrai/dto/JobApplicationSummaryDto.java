@@ -14,4 +14,3 @@ public class JobApplicationSummaryDto {
   private Status status;
   private LocalDate appliedDate;
 }
-

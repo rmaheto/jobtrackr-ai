@@ -14,9 +14,8 @@ public class AuditInterceptor {
   @PrePersist
   public void setCreationAudit(final Object entity) {
     if (entity instanceof final Auditable auditable && ObjectUtils.isEmpty(auditable.getAudit())) {
-        auditable.setAudit(new Audit(SecurityUtils.getCurrentUsername(), Audit.PROGRAM));
-      }
-
+      auditable.setAudit(new Audit(SecurityUtils.getCurrentUsername(), Audit.PROGRAM));
+    }
   }
 
   @PreUpdate

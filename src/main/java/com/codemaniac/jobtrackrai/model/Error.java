@@ -15,19 +15,15 @@ public class Error implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  @NotNull
-  private String code;
+  @NotNull private String code;
 
-  @NotNull
-  private String locale;
+  @NotNull private String locale;
 
-  @NotNull
-  private String localizedMessage;
+  @NotNull private String localizedMessage;
 
   private List<String> paths;
 
-  @NotNull
-  private Severity severity;
+  @NotNull private Severity severity;
 
   private String supportInformation;
 

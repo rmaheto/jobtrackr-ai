@@ -31,11 +31,7 @@ public interface ResumeMapper {
   default void mapJobApplications(final Resume resume, @MappingTarget final ResumeDto dto) {
     if (resume.getJobApplications() != null) {
       dto.setJobApplications(
-          resume.getJobApplications().stream()
-              .map(this::toJobApplicationSummaryDto)
-              .toList()
-      );
+          resume.getJobApplications().stream().map(this::toJobApplicationSummaryDto).toList());
     }
   }
-
 }

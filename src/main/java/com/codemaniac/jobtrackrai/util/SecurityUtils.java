@@ -1,6 +1,5 @@
 package com.codemaniac.jobtrackrai.util;
 
-
 import com.codemaniac.jobtrackrai.model.Audit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,5 +24,4 @@ public class SecurityUtils {
       return null;
     }
   }
-
 }
