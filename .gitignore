@@ -18,9 +18,8 @@ logs/
 Thumbs.db
 
 # Spring Boot
-application-*.yml
-application-*.yaml
-application-*.properties
+
+
 
 # Exclude secrets
 *.env
