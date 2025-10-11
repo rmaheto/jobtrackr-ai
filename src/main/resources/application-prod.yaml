@@ -9,6 +9,8 @@ spring:
     oauth2:
       client:
         registration:
+          google:
+            redirect-uri: https://api.jobtrackrpro.com/login/oauth2/code/github
           linkedin:
             redirect-uri: https://jobtrackrpro.com/login/oauth2/code/linkedin
 
