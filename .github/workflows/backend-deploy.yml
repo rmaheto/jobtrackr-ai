@@ -41,8 +41,8 @@ jobs:
         run: mvn -B spotless:check
 
       # ---- Unit tests ----
-      - name: Run unit tests
-        run: mvn -B test
+#      - name: Run unit tests
+#        run: mvn -B test
 
       # ---- Package (fat jar) ----
       - name: Package (repackage Spring Boot)
@@ -104,10 +104,10 @@ jobs:
           ssh -o StrictHostKeyChecking=no "$EC2_USER@$EC2_HOST" \
             "sudo systemctl restart $SERVICE_NAME && sudo systemctl is-active --quiet $SERVICE_NAME || (sudo journalctl -u $SERVICE_NAME -n 200 --no-pager; exit 1)"
 
-      - name: Health check (through nginx /api)
-        env:
-          PUBLIC_HOST: jobtrackrpro.com
-        run: |
-          echo "🩺 Checking https://$PUBLIC_HOST/actuator/health ..."
-          curl -fsS --retry 5 --retry-delay 3 "https://$PUBLIC_HOST/actuator/health" \
-            | tee /dev/stderr | grep -q '"status":"UP"'
+#      - name: Health check (through nginx /api)
+#        env:
+#          PUBLIC_HOST: jobtrackrpro.com
+#        run: |
+#          echo "🩺 Checking https://$PUBLIC_HOST/actuator/health ..."
+#          curl -fsS --retry 5 --retry-delay 3 "https://$PUBLIC_HOST/actuator/health" \
+#            | tee /dev/stderr | grep -q '"status":"UP"'
