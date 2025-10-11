@@ -46,7 +46,7 @@ jobs:
 
       # ---- Package (fat jar) ----
       - name: Package (repackage Spring Boot)
-        run: mvn -B clean package spring-boot:repackage -DskipTests -Dspring.profiles.active=prod
+        run: mvn -B clean package spring-boot:repackage -DskipTests -Dspring.profiles.active=desktop
 
       # Keep the jar as a build artifact for the deploy job
       - name: Upload JAR artifact
