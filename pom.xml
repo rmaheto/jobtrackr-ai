@@ -16,14 +16,27 @@
 
   <properties>
     <java.version>17</java.version>
+    <serverLevel>desktop</serverLevel>
 
     <commons-lang3.version>3.14.0</commons-lang3.version>
     <spring-ai.version>1.0.0</spring-ai.version>
-
+    <remote.debugging.port>8001</remote.debugging.port>
     <!-- Test Dependencies -->
     <junit-bom.version>5.10.3</junit-bom.version>
     <mockito-bom.version>4.11.0</mockito-bom.version>
     <lombok.version>1.18.22</lombok.version>
+
+    <jacoco.maven.plugin.version>0.8.11</jacoco.maven.plugin.version>
+    <maven.clean.plugin.version>3.3.2</maven.clean.plugin.version>
+    <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
+    <maven.dependency.plugin.version>3.6.1</maven.dependency.plugin.version>
+    <maven.deploy.plugin.version>3.1.1</maven.deploy.plugin.version>
+    <maven.enforcer.plugin.version>3.4.1</maven.enforcer.plugin.version>
+    <maven.install.plugin.version>3.1.1</maven.install.plugin.version>
+    <maven.jar.plugin.version>3.4.1</maven.jar.plugin.version>
+    <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
+    <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
+    <openapi-generator-maven-plugin.version>7.4.0</openapi-generator-maven-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -238,17 +251,166 @@
   </dependencies>
 
   <build>
+    <finalName>${project.artifactId}</finalName>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>src/main/resources/filtered-resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+        </plugin>
+        <plugin>
+          <groupId>org.openapitools</groupId>
+          <artifactId>openapi-generator-maven-plugin</artifactId>
+          <version>${openapi-generator-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.cargo</groupId>
+          <artifactId>cargo-maven3-plugin</artifactId>
+          <version>1.10.15</version>
+          <configuration>
+            <container>
+              <containerId>tomcat10x</containerId>
+              <output>target/output.log</output>
+              <append>false</append>
+              <artifactInstaller>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat</artifactId>
+                <version>${tomcat.version}</version>
+                <type>zip</type>
+              </artifactInstaller>
+              <systemProperties>
+                <env>desktop</env>
+                <spring.profiles.active>${serverLevel}</spring.profiles.active>
+                <logback.configurationFile>${serverLevel}/logback.xml</logback.configurationFile>
+                <java.util.logging.manager>org.apache.juli.ClassLoaderLogManager</java.util.logging.manager>
+                <bclass.infra.env>boa</bclass.infra.env>
+              </systemProperties>
+            </container>
+            <configuration>
+              <properties>
+                <cargo.servlet.port>8080</cargo.servlet.port>
+                <cargo.start.jvmargs>
+                  -Xdebug
+                  -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=${remote.debugging.port}
+                  -Xnoagent
+                </cargo.start.jvmargs>
+                <cargo.jvmargs>-Xmx2048m</cargo.jvmargs>
+                <cargo.tomcat.context.reloadable>true</cargo.tomcat.context.reloadable>
+              </properties>
+            </configuration>
+            <deployables>
+              <deployable>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>${project.artifactId}</artifactId>
+                <type>war</type>
+              </deployable>
+            </deployables>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <executions>
+            <execution>
+              <goals>
+                <goal>repackage</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <jvmArguments>
+              -Xdebug
+              -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=${remote.debugging.port}
+              -Xnoagent
+              -Djava.compiler=NONE
+              -Derac.serverLevel=${serverLevel}
+              -Dspring.profiles.active=${serverLevel}
+              -Dserver.port=8080
+            </jvmArguments>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>${maven.enforcer.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven.compiler.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${maven.clean.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>${maven.dependency.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>${maven.install.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${maven.jar.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${maven.resources.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>${maven.war.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.1.2</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.2.5</version>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.maven.plugin.version}</version>
         <configuration>
-          <includes>
-            <include>**/*Test.java</include>
-            <include>**/*Tests.java</include>
-          </includes>
+          <excludes>
+            <exclude>**/org/mockito/**</exclude>
+            <exclude>**/com/sun/**</exclude>
+          </excludes>
         </configuration>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -270,18 +432,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok</artifactId>
-            </exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
         <version>2.44.0</version>
@@ -299,6 +449,8 @@
           </java>
         </configuration>
       </plugin>
+
+
     </plugins>
   </build>
 
