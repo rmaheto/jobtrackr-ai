@@ -30,18 +30,25 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
-    http
-        .csrf(AbstractHttpConfigurer::disable)
+    http.csrf(AbstractHttpConfigurer::disable)
         .cors(cors -> cors.configurationSource(customCorsConfiguration))
         .authorizeHttpRequests(
-            auth -> auth.requestMatchers("/api/**").authenticated().anyRequest().permitAll())
-        .oauth2Login(oauth2 -> oauth2
-            .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-            .successHandler(successHandler)
-        )
-        .oauth2ResourceServer(oauth2 ->
-            oauth2.jwt(jwt -> jwt.decoder(jwtDecoder()).jwtAuthenticationConverter(jwtAuthConverter))
-        );
+            auth ->
+                auth.requestMatchers("/actuator/health", "/actuator/info")
+                    .permitAll()
+                    .requestMatchers("/api/**")
+                    .authenticated()
+                    .anyRequest()
+                    .permitAll())
+        .oauth2Login(
+            oauth2 ->
+                oauth2
+                    .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                    .successHandler(successHandler))
+        .oauth2ResourceServer(
+            oauth2 ->
+                oauth2.jwt(
+                    jwt -> jwt.decoder(jwtDecoder()).jwtAuthenticationConverter(jwtAuthConverter)));
 
     return http.build();
   }
