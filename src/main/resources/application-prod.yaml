@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/jobtrackr-db
+    url: jdbc:postgresql://localhost:5432/jobtrackr-db
 
   security:
     oauth2:
