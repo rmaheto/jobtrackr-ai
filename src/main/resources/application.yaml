@@ -20,7 +20,7 @@ spring:
     active: desktop
   datasource:
 #    url: jdbc:postgresql://host.docker.internal:5432/jobtrackr-db
-    url: jdbc:postgresql://localhost:5433/jobtrackr-db
+    url: jdbc:postgresql://localhost:5432/jobtrackr-db
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD.key}
     driver-class-name: org.postgresql.Driver
