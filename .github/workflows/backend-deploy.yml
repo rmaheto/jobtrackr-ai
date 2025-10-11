@@ -1,0 +1,113 @@
+name: Backend CI/CD (Spring Boot)
+
+on:
+  push:
+    branches: [ main ]           # build & deploy on push to main
+  pull_request:
+    branches: [ main ]           # run CI on PRs (no deploy)
+  workflow_dispatch:
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ------------------------------
+  # CI: Install → Format → Test → Package
+  # ------------------------------
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Temurin JDK 17 (with Maven cache)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven   # ✅ handles ~/.m2/repository caching automatically
+
+      # (Optional) restore/resolve dependencies – mostly covered by maven cache above
+      - name: Install/Restore dependencies
+        run: mvn -B -q dependency:resolve dependency:resolve-plugins
+
+      # ---- Code format with Spotless (uses google-java-format under the hood) ----
+      - name: Check code format (Spotless)
+        run: mvn -B spotless:check
+
+      # ---- Unit tests ----
+      - name: Run unit tests
+        run: mvn -B test
+
+      # ---- Package (fat jar) ----
+      - name: Package (repackage Spring Boot)
+        run: mvn -B clean package spring-boot:repackage -DskipTests -Dspring.profiles.active=prod
+
+      # Keep the jar as a build artifact for the deploy job
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: target/*.jar
+          if-no-files-found: error
+          retention-days: 3
+
+  # ------------------------------
+  # Deploy (only on main, after CI success)
+  # ------------------------------
+  deploy:
+    needs: [ci]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - name: Download JAR artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: target
+
+      - name: Install SSH tools
+        run: sudo apt-get update && sudo apt-get install -y openssh-client rsync
+
+      - name: Setup SSH
+        env:
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_HOST:    ${{ secrets.EC2_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf "%s\n" "$EC2_SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          EC2_HOST:      ${{ secrets.EC2_HOST }}
+          EC2_USER:      ${{ secrets.EC2_USER }}                 # e.g. ubuntu
+          BACKEND_PATH:  ${{ secrets.BACKEND_DEPLOY_PATH }}      # e.g. /opt/portfolio-backend
+          SERVICE_NAME:  ${{ secrets.SERVICE_NAME }}             # e.g. portfolio-backend.service
+        run: |
+          set -e
+          JAR_PATH="$(ls -1 target/*.jar | head -n1)"
+          echo "📦 Rsync $JAR_PATH to $EC2_USER@$EC2_HOST:$BACKEND_PATH/app.jar"
+          rsync -avz --delete "$JAR_PATH" "$EC2_USER@$EC2_HOST:$BACKEND_PATH/app.jar"
+
+          echo "🔄 Restart $SERVICE_NAME"
+          ssh -o StrictHostKeyChecking=no "$EC2_USER@$EC2_HOST" \
+            "sudo systemctl restart $SERVICE_NAME && sudo systemctl is-active --quiet $SERVICE_NAME || (sudo journalctl -u $SERVICE_NAME -n 200 --no-pager; exit 1)"
+
+      - name: Health check (through nginx /api)
+        env:
+          PUBLIC_HOST: jobtrackrpro.com
+        run: |
+          echo "🩺 Checking https://$PUBLIC_HOST/actuator/health ..."
+          curl -fsS --retry 5 --retry-delay 3 "https://$PUBLIC_HOST/actuator/health" \
+            | tee /dev/stderr | grep -q '"status":"UP"'
