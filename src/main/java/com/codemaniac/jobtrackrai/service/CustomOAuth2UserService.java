@@ -1,5 +1,6 @@
 package com.codemaniac.jobtrackrai.service;
 
+import java.util.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -10,8 +11,6 @@ import org.springframework.security.oauth2.core.*;
 import org.springframework.security.oauth2.core.user.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -24,13 +23,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
   private static final String PICTURE = "picture";
   private static final String PICTURE_URL = "pictureUrl";
 
-
   @Override
-  public OAuth2User loadUser(final OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+  public OAuth2User loadUser(final OAuth2UserRequest userRequest)
+      throws OAuth2AuthenticationException {
     final OAuth2User oAuth2User = super.loadUser(userRequest);
     final Map<String, Object> attributes = new HashMap<>(oAuth2User.getAttributes());
 
-    final String registrationId = userRequest.getClientRegistration().getRegistrationId().toLowerCase();
+    final String registrationId =
+        userRequest.getClientRegistration().getRegistrationId().toLowerCase();
     attributes.put("provider", registrationId);
 
     switch (registrationId) {
@@ -44,7 +44,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     return new DefaultOAuth2User(oAuth2User.getAuthorities(), attributes, "id");
   }
 
-  private void handleGitHub(final OAuth2UserRequest userRequest, final Map<String, Object> attributes) {
+  private void handleGitHub(
+      final OAuth2UserRequest userRequest, final Map<String, Object> attributes) {
     if (attributes.get(EMAIL) == null) {
       try {
         final String email = fetchGitHubPrimaryEmail(userRequest);
@@ -115,7 +116,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     }
   }
 
-
   private String fetchGitHubPrimaryEmail(final OAuth2UserRequest userRequest) {
     final String emailEndpoint = "https://api.github.com/user/emails";
 
@@ -127,11 +127,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     final ResponseEntity<List<Map<String, Object>>> response =
         restTemplate.exchange(
-            emailEndpoint,
-            HttpMethod.GET,
-            entity,
-            new ParameterizedTypeReference<>() {}
-        );
+            emailEndpoint, HttpMethod.GET, entity, new ParameterizedTypeReference<>() {});
 
     final List<Map<String, Object>> emails = response.getBody();
     if (emails == null || emails.isEmpty()) return null;
@@ -142,5 +138,4 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         .findFirst()
         .orElse(null);
   }
-
 }

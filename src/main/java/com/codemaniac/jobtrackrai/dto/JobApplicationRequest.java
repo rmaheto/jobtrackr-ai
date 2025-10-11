@@ -25,4 +25,3 @@ public class JobApplicationRequest {
   private Optional<String> notes = Optional.empty();
   private Optional<Long> linkedResumeId = Optional.empty();
 }
-

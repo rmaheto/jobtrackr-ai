@@ -30,4 +30,3 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
     return Collections.emptyList();
   }
 }
-

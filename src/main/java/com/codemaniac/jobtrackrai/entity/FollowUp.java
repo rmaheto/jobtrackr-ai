@@ -51,7 +51,5 @@ public class FollowUp implements Auditable {
   @JoinColumn(name = "job_application_id", nullable = false)
   private JobApplication jobApplication;
 
-  @Embedded
-  private Audit audit = new Audit();
+  @Embedded private Audit audit = new Audit();
 }
-

@@ -7,12 +7,11 @@ import com.codemaniac.jobtrackrai.model.Audit;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import org.springframework.data.jpa.domain.Specification;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.domain.Specification;
 
 public class JobApplicationSpecifications {
 
@@ -43,7 +42,8 @@ public class JobApplicationSpecifications {
 
       Optional.ofNullable(request.getStatus())
           .map(String::toUpperCase)
-          .ifPresent(status -> predicates.add(cb.equal(root.get("status"), Status.valueOf(status))));
+          .ifPresent(
+              status -> predicates.add(cb.equal(root.get("status"), Status.valueOf(status))));
 
       // Date filters
       addDateRange(cb, root, predicates, request.getFromDate(), request.getToDate());
@@ -59,16 +59,17 @@ public class JobApplicationSpecifications {
       final String searchTerm) {
     Optional.ofNullable(searchTerm)
         .filter(term -> !term.isBlank())
-        .ifPresent(term -> {
-          final String likePattern = "%" + term.toLowerCase() + "%";
-          final Predicate companyLike = cb.like(cb.lower(root.get("company")), likePattern);
-          final Predicate roleLike = cb.like(cb.lower(root.get("role")), likePattern);
-          final Predicate locationLike = cb.like(cb.lower(root.get("location")), likePattern);
-          final Predicate skillsLike = cb.like(cb.lower(root.get("skills")), likePattern);
+        .ifPresent(
+            term -> {
+              final String likePattern = "%" + term.toLowerCase() + "%";
+              final Predicate companyLike = cb.like(cb.lower(root.get("company")), likePattern);
+              final Predicate roleLike = cb.like(cb.lower(root.get("role")), likePattern);
+              final Predicate locationLike = cb.like(cb.lower(root.get("location")), likePattern);
+              final Predicate skillsLike = cb.like(cb.lower(root.get("skills")), likePattern);
 
-          // OR across multiple fields
-          predicateList.add(cb.or(companyLike, roleLike, locationLike, skillsLike));
-        });
+              // OR across multiple fields
+              predicateList.add(cb.or(companyLike, roleLike, locationLike, skillsLike));
+            });
   }
 
   private static void addLikeIfPresent(
@@ -89,8 +90,7 @@ public class JobApplicationSpecifications {
       final List<Predicate> predicateList,
       final String field,
       final Object val) {
-    Optional.ofNullable(val)
-        .ifPresent(v -> predicateList.add(cb.equal(root.get(field), v)));
+    Optional.ofNullable(val).ifPresent(v -> predicateList.add(cb.equal(root.get(field), v)));
   }
 
   private static void addDateRange(

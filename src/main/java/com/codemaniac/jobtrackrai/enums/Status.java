@@ -1,5 +1,9 @@
 package com.codemaniac.jobtrackrai.enums;
 
 public enum Status {
-  APPLIED, SCREENING, INTERVIEW, OFFER, REJECTED
+  APPLIED,
+  SCREENING,
+  INTERVIEW,
+  OFFER,
+  REJECTED
 }

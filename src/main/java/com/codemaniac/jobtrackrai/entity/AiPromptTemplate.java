@@ -37,6 +37,5 @@ public class AiPromptTemplate implements Auditable {
 
   private String model;
 
-  @Embedded
-  private Audit audit = new Audit();
+  @Embedded private Audit audit = new Audit();
 }

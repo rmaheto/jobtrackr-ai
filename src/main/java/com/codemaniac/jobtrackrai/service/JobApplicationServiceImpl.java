@@ -177,9 +177,10 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             });
 
     if (request.getLinkedResumeId().isPresent()) {
-      final Long newResumeId = request.getLinkedResumeId()
-          .orElseThrow(() -> new IllegalArgumentException("Linked resume ID is required"));
-
+      final Long newResumeId =
+          request
+              .getLinkedResumeId()
+              .orElseThrow(() -> new IllegalArgumentException("Linked resume ID is required"));
 
       if (jobApplication.getResume() != null
           && !jobApplication.getResume().getId().equals(newResumeId)) {

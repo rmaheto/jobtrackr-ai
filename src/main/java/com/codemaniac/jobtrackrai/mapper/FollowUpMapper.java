@@ -22,5 +22,4 @@ public interface FollowUpMapper {
   default OffsetDateTime map(final String value) {
     return value != null ? OffsetDateTime.parse(value) : null;
   }
-
 }

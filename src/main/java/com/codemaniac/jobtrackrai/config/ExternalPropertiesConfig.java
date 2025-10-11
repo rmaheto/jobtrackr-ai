@@ -1,6 +1,5 @@
 package com.codemaniac.jobtrackrai.config;
 
-
 import com.codemaniac.jobtrackrai.exception.PropertyEncryptionException;
 import com.codemaniac.jobtrackrai.util.EncryptionUtil;
 import jakarta.annotation.Nonnull;

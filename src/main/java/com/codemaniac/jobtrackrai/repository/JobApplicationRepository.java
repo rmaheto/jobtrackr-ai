@@ -15,15 +15,14 @@ public interface JobApplicationRepository
 
   List<JobApplication> findAllByUserIdAndAudit_RecordStatus(Long id, String status);
 
-  List<JobApplication> findByUserIdAndAudit_RecordStatusOrderByAudit_CreateTimestampDesc(Long id, String status);
+  List<JobApplication> findByUserIdAndAudit_RecordStatusOrderByAudit_CreateTimestampDesc(
+      Long id, String status);
 
-  @Query("SELECT new com.codemaniac.jobtrackrai.dto.JobApplicationSummaryDto(" +
-      "a.id, a.company, a.role, a.status, a.appliedDate) " +
-      "FROM JobApplication a " +
-      "WHERE a.user.id = :userId AND a.audit.recordStatus = :recordStatus")
+  @Query(
+      "SELECT new com.codemaniac.jobtrackrai.dto.JobApplicationSummaryDto("
+          + "a.id, a.company, a.role, a.status, a.appliedDate) "
+          + "FROM JobApplication a "
+          + "WHERE a.user.id = :userId AND a.audit.recordStatus = :recordStatus")
   List<JobApplicationSummaryDto> findLiteByUserIdAndStatus(
-      @Param("userId") Long userId,
-      @Param("recordStatus") String recordStatus);
-
-
+      @Param("userId") Long userId, @Param("recordStatus") String recordStatus);
 }

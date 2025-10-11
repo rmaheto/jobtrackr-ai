@@ -132,7 +132,7 @@ public class JobApplicationController {
     return ResponseEntity.ok()
         .body(ApiResponse.of(HttpStatus.OK.name(), "Job application deleted"));
   }
-  
+
   @GetMapping("/export")
   public ResponseEntity<byte[]> exportApplicationsToExcel(
       @ModelAttribute final JobApplicationSearchRequest request) {

@@ -22,12 +22,10 @@ public class JwtTokenService {
   @Value("${jwt.expiration}")
   private Long expiration;
 
-
   public String generateToken(final User user) {
     final Date now = new Date();
     final Date expiry = new Date(now.getTime() + expiration);
-    final SecretKey key =
-        Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    final SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     return Jwts.builder()
         .setSubject(user.getExternalId())
         .claim("email", user.getEmail())
@@ -40,13 +38,7 @@ public class JwtTokenService {
   }
 
   public Claims validateToken(final String token) {
-    final SecretKey key =
-        Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-    return Jwts.parserBuilder()
-        .setSigningKey(key)
-        .build()
-        .parseClaimsJws(token)
-        .getBody();
+    final SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
   }
 }
-

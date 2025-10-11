@@ -33,4 +33,3 @@ public class AiPromptService {
 
   public record PromptWithModel(String prompt, String model) {}
 }
-

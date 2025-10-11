@@ -58,8 +58,7 @@ public class Resume implements Auditable {
   @JoinColumn(name = "user_id")
   private User user;
 
-  @Embedded
-  private Audit audit = new Audit();
+  @Embedded private Audit audit = new Audit();
 
   public void addJobApplication(final JobApplication application) {
     jobApplications.add(application);
@@ -73,4 +72,3 @@ public class Resume implements Auditable {
     this.linkedApplications = Math.max(0, this.linkedApplications - 1);
   }
 }
-

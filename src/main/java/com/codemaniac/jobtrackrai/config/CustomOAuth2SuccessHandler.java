@@ -26,21 +26,21 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
   public void onAuthenticationSuccess(
       final HttpServletRequest request,
       final HttpServletResponse response,
-      final Authentication authentication) throws IOException, ServletException {
+      final Authentication authentication)
+      throws IOException, ServletException {
 
     final OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-
 
     final User user = currentUserService.getOrCreateFromOAuth2(oAuth2User);
 
     final String token = jwtTokenService.generateToken(user);
 
-    log.info("User {} authenticated via {} and issued JWT", user.getEmail(),
+    log.info(
+        "User {} authenticated via {} and issued JWT",
+        user.getEmail(),
         authentication.getAuthorities());
 
     final String redirectUrl = "http://localhost:3000/oauth/callback?token=" + token;
     response.sendRedirect(redirectUrl);
-
   }
 }
-
