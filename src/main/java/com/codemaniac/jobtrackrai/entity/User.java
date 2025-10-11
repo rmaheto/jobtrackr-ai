@@ -41,7 +41,8 @@ public class User implements Auditable {
 
   private String email;
   private String name;
-
+  private String pictureUrl;
+  private String provider;
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<JobApplication> applications = new ArrayList<>();
 

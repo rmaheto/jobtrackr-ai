@@ -6,12 +6,14 @@ import com.codemaniac.jobtrackrai.entity.JobApplication;
 import java.util.List;
 import java.util.Optional;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface JobApplicationMapper {
 
   JobApplication toEntity(JobApplicationRequest request);
 
+  @Mapping(source="resume.id", target = "linkedResumeId")
   JobApplicationDto toDto(JobApplication entity);
 
   List<JobApplicationDto> toDtoList(List<JobApplication> entities);

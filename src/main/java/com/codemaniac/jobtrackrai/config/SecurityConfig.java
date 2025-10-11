@@ -1,5 +1,6 @@
 package com.codemaniac.jobtrackrai.config;
 
+import com.codemaniac.jobtrackrai.service.CustomOAuth2UserService;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import javax.crypto.SecretKey;
@@ -23,10 +24,9 @@ public class SecurityConfig {
   private String secret;
 
   private final JwtAuthConverter jwtAuthConverter;
-
   private final CustomOAuth2SuccessHandler successHandler;
-
   private final CustomCorsConfiguration customCorsConfiguration;
+  private final CustomOAuth2UserService customOAuth2UserService;
 
   @Bean
   public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
@@ -35,12 +35,13 @@ public class SecurityConfig {
         .cors(cors -> cors.configurationSource(customCorsConfiguration))
         .authorizeHttpRequests(
             auth -> auth.requestMatchers("/api/**").authenticated().anyRequest().permitAll())
-        .oauth2Login(oauth2 -> oauth2.successHandler(successHandler))
-        .oauth2ResourceServer(
-            oauth2 ->
-                oauth2.jwt(
-                    jwt -> jwt.decoder(jwtDecoder()).jwtAuthenticationConverter(jwtAuthConverter)))
-        .csrf(AbstractHttpConfigurer::disable);
+        .oauth2Login(oauth2 -> oauth2
+            .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+            .successHandler(successHandler)
+        )
+        .oauth2ResourceServer(oauth2 ->
+            oauth2.jwt(jwt -> jwt.decoder(jwtDecoder()).jwtAuthenticationConverter(jwtAuthConverter))
+        );
 
     return http.build();
   }

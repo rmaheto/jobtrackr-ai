@@ -14,4 +14,7 @@ public interface JobApplicationService {
   JobApplicationDto update(Long id, JobApplicationRequest request);
   JobApplicationDto updateStatus(Long id, String status);
   void delete(Long id);
+  // JobApplicationService.java
+  public byte[] exportToExcel(JobApplicationSearchRequest request);
+
 }

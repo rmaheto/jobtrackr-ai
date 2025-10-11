@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class JobApplicationSearchRequest {
+  private String searchTerm;
   private String company;
   private String role;
   private String location;

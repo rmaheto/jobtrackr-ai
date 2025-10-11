@@ -25,5 +25,6 @@ public class JobApplicationDto {
   private String contactPersonName;
   private String contactPersonEmail;
   private String notes;
+  private Long linkedResumeId;
 }
 

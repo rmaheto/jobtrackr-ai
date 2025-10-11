@@ -13,10 +13,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -75,8 +78,8 @@ public class JobApplicationController {
 
     final Sort sort =
         direction.equalsIgnoreCase("desc")
-            ? Sort.by(sortBy).descending()
-            : Sort.by(sortBy).ascending();
+            ? Sort.by(sortBy).descending().and(Sort.by("id").descending())
+            : Sort.by(sortBy).ascending().and(Sort.by("id").ascending());
 
     final Pageable pageable = PageRequest.of(page, size, sort);
 
@@ -128,5 +131,19 @@ public class JobApplicationController {
 
     return ResponseEntity.ok()
         .body(ApiResponse.of(HttpStatus.OK.name(), "Job application deleted"));
+  }
+  
+  @GetMapping("/export")
+  public ResponseEntity<byte[]> exportApplicationsToExcel(
+      @ModelAttribute final JobApplicationSearchRequest request) {
+
+    final byte[] excelData = jobApplicationService.exportToExcel(request);
+
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=job_applications.xlsx")
+        .contentType(
+            MediaType.parseMediaType(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+        .body(excelData);
   }
 }

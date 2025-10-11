@@ -4,20 +4,33 @@ import com.codemaniac.jobtrackrai.dto.JobApplicationDto;
 import com.codemaniac.jobtrackrai.dto.JobApplicationRequest;
 import com.codemaniac.jobtrackrai.dto.JobApplicationSearchRequest;
 import com.codemaniac.jobtrackrai.entity.JobApplication;
+import com.codemaniac.jobtrackrai.entity.Resume;
 import com.codemaniac.jobtrackrai.entity.User;
 import com.codemaniac.jobtrackrai.enums.Status;
 import com.codemaniac.jobtrackrai.exception.BadRequestException;
+import com.codemaniac.jobtrackrai.exception.ExcelExportException;
 import com.codemaniac.jobtrackrai.exception.NotFoundException;
 import com.codemaniac.jobtrackrai.mapper.JobApplicationMapper;
 import com.codemaniac.jobtrackrai.model.Audit;
 import com.codemaniac.jobtrackrai.repository.JobApplicationRepository;
 import com.codemaniac.jobtrackrai.repository.JobApplicationSpecifications;
+import com.codemaniac.jobtrackrai.repository.ResumeRepository;
 import jakarta.annotation.Nonnull;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,10 +42,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class JobApplicationServiceImpl implements JobApplicationService {
 
   private final JobApplicationRepository repository;
+  private final ResumeRepository resumeRepository;
   private final CurrentUserService currentUserService;
   private final JobScraperService jobScraperService;
   private final JobApplicationAiService jobApplicationAiService;
-  private final JobApplicationMapper mapper;
+  private final JobApplicationMapper jobApplicationMapper;
 
   private static final String JOB_NOT_FOUND = "Job application not found id={}";
 
@@ -46,10 +60,26 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         request.getCompany(),
         request.getRole());
 
-    final JobApplication entity = mapper.toEntity(request);
+    final JobApplication entity = jobApplicationMapper.toEntity(request);
     entity.setStatus(Status.APPLIED);
     entity.setAppliedDate(LocalDate.now());
     entity.setUser(user);
+
+    request
+        .getLinkedResumeId()
+        .ifPresent(
+            resumeId -> {
+              final Resume resume =
+                  resumeRepository
+                      .findById(resumeId)
+                      .filter(r -> r.getUser().equals(user))
+                      .orElseThrow(
+                          () ->
+                              new IllegalArgumentException(
+                                  "Invalid resume ID or not owned by user"));
+
+              resume.addJobApplication(entity);
+            });
 
     final JobApplication saved = repository.save(entity);
 
@@ -57,7 +87,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
       log.debug("Job application persisted with id={} for user={}", saved.getId(), user.getEmail());
     }
 
-    return mapper.toDto(saved);
+    return jobApplicationMapper.toDto(saved);
   }
 
   @Override
@@ -84,7 +114,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
 
     return repository
         .findAll(JobApplicationSpecifications.forSearch(request, user.getId()), pageable)
-        .map(mapper::toDto);
+        .map(jobApplicationMapper::toDto);
   }
 
   @Override
@@ -101,7 +131,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                     app.getCompany(),
                     app.getRole());
               }
-              return mapper.toDto(app);
+              return jobApplicationMapper.toDto(app);
             })
         .orElseThrow(
             () -> {
@@ -113,7 +143,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
   @Transactional
   @Override
   public JobApplicationDto update(final Long id, final JobApplicationRequest request) {
-
+    final User user = currentUserService.getCurrentUser();
     final JobApplication jobApplication =
         findJobApplication(id).orElseThrow(() -> new NotFoundException(id));
 
@@ -146,7 +176,29 @@ public class JobApplicationServiceImpl implements JobApplicationService {
               }
             });
 
-    return mapper.toDto(jobApplication);
+    if (request.getLinkedResumeId().isPresent()) {
+      final Long newResumeId = request.getLinkedResumeId()
+          .orElseThrow(() -> new IllegalArgumentException("Linked resume ID is required"));
+
+
+      if (jobApplication.getResume() != null
+          && !jobApplication.getResume().getId().equals(newResumeId)) {
+        jobApplication.getResume().removeJobApplication(jobApplication);
+      }
+
+      final Resume newResume =
+          resumeRepository
+              .findById(newResumeId)
+              .filter(r -> r.getUser().equals(user))
+              .orElseThrow(
+                  () -> new IllegalArgumentException("Invalid resume ID or not owned by user"));
+
+      newResume.addJobApplication(jobApplication);
+    } else if (jobApplication.getResume() != null) {
+      jobApplication.getResume().removeJobApplication(jobApplication);
+    }
+
+    return jobApplicationMapper.toDto(jobApplication);
   }
 
   @Override
@@ -158,7 +210,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
 
     jobApplication.setStatus(Status.valueOf(status));
 
-    return mapper.toDto(jobApplication);
+    return jobApplicationMapper.toDto(jobApplication);
   }
 
   @Override
@@ -186,6 +238,82 @@ public class JobApplicationServiceImpl implements JobApplicationService {
               }
               return app;
             });
+  }
+
+  @Override
+  public byte[] exportToExcel(final JobApplicationSearchRequest request) {
+    final User user = currentUserService.getCurrentUser();
+    final List<JobApplication> apps =
+        repository.findAll(JobApplicationSpecifications.forSearch(request, user.getId()));
+
+    try (final Workbook workbook = new XSSFWorkbook()) {
+      final Sheet sheet = workbook.createSheet("Job Applications");
+
+      createHeaderRow(workbook, sheet);
+      populateDataRows(sheet, apps);
+      autoSizeColumns(sheet, 7);
+
+      return writeWorkbookToBytes(workbook);
+
+    } catch (final IOException e) {
+      throw new ExcelExportException("Failed to generate Excel file", e);
+    }
+  }
+
+  private void createHeaderRow(final Workbook workbook, final Sheet sheet) {
+    final String[] headers = {
+      "Company", "Role", "Location", "Type", "Status", "Applied Date", "Job URL"
+    };
+
+    final Row headerRow = sheet.createRow(0);
+    final CellStyle headerStyle = createHeaderStyle(workbook);
+
+    for (int i = 0; i < headers.length; i++) {
+      final Cell cell = headerRow.createCell(i);
+      cell.setCellValue(headers[i]);
+      cell.setCellStyle(headerStyle);
+    }
+  }
+
+  private CellStyle createHeaderStyle(final Workbook workbook) {
+    final Font font = workbook.createFont();
+    font.setBold(true);
+
+    final CellStyle style = workbook.createCellStyle();
+    style.setFont(font);
+    return style;
+  }
+
+  private void populateDataRows(final Sheet sheet, final List<JobApplication> apps) {
+    int rowNum = 1;
+    for (final JobApplication app : apps) {
+      final Row row = sheet.createRow(rowNum++);
+      row.createCell(0).setCellValue(defaultString(app.getCompany()));
+      row.createCell(1).setCellValue(defaultString(app.getRole()));
+      row.createCell(2).setCellValue(defaultString(app.getLocation()));
+      row.createCell(3).setCellValue(defaultString(app.getJobType()));
+      row.createCell(4).setCellValue(app.getStatus().name());
+      row.createCell(5)
+          .setCellValue(app.getAppliedDate() != null ? app.getAppliedDate().toString() : "");
+      row.createCell(6).setCellValue(defaultString(app.getJobLink()));
+    }
+  }
+
+  private void autoSizeColumns(final Sheet sheet, int totalColumns) {
+    for (int i = 0; i < totalColumns; i++) {
+      sheet.autoSizeColumn(i);
+    }
+  }
+
+  private String defaultString(final String value) {
+    return value != null ? value : "";
+  }
+
+  private byte[] writeWorkbookToBytes(final Workbook workbook) throws IOException {
+    try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+      workbook.write(out);
+      return out.toByteArray();
+    }
   }
 
   private void setActiveRecordStatusToInactive(final JobApplication jobApplication) {
