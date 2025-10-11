@@ -5,14 +5,6 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5433/jobtrackr-db
 
-  security:
-    oauth2:
-      client:
-        registration:
-#          google:
-#            redirect-uri: https://jobtrackrpro.com/login/oauth2/code/github
-          linkedin:
-            redirect-uri: https://jobtrackrpro.com/login/oauth2/code/linkedin
 
 aws:
   cloudfront:
