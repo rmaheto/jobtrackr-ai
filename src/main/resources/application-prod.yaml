@@ -1,0 +1,19 @@
+server:
+  address: 0.0.0.0
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/jobtrackr-db
+
+  security:
+    oauth2:
+      client:
+        registration:
+          linkedin:
+            redirect-uri: https://jobtrackrpro.com/login/oauth2/code/linkedin
+
+aws:
+  cloudfront:
+    privateKeyPath: /keys/jobtrackr-cf_private.pem
+
+
