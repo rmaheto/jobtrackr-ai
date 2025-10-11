@@ -41,8 +41,8 @@ jobs:
         run: mvn -B spotless:check
 
       # ---- Unit tests ----
-#      - name: Run unit tests
-#        run: mvn -B test
+      - name: Run unit tests
+        run: mvn -B test
 
       # ---- Package (fat jar) ----
       - name: Package (repackage Spring Boot)

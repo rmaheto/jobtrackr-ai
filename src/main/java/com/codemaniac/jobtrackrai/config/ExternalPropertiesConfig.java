@@ -35,6 +35,7 @@ class ExternalPropertiesConfig {
 
       final String activeProfile = getActiveProfile(environment);
       final String externalFilePath = getExternalFilePath(activeProfile);
+      log.info("Using active profile '{}', expecting file: {}", activeProfile, externalFilePath);
       final File externalFile = new File(externalFilePath);
 
       if (!externalFile.exists()) {
