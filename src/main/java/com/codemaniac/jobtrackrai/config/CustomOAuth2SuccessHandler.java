@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -21,6 +22,9 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
   private final JwtTokenService jwtTokenService;
   private final CurrentUserService currentUserService;
+
+  @Value("${app.frontend.url}")
+  private String redirectBaseUrl;
 
   @Override
   public void onAuthenticationSuccess(
@@ -40,7 +44,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         user.getEmail(),
         authentication.getAuthorities());
 
-    final String redirectUrl = "http://localhost:3000/oauth/callback?token=" + token;
+    final String redirectUrl = redirectBaseUrl + "/oauth/callback?token=" + token;
     response.sendRedirect(redirectUrl);
   }
 }

@@ -18,4 +18,8 @@ aws:
   cloudfront:
     privateKeyPath: /keys/jobtrackr-cf_private.pem
 
+app:
+  frontend:
+    url: https://jobtrackrpro.com
+
 
