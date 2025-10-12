@@ -13,6 +13,10 @@ spring:
             redirect-uri: https://api.jobtrackrpro.com/login/oauth2/code/google
           linkedin:
             redirect-uri: https://jobtrackrpro.com/login/oauth2/code/linkedin
+          github:
+            redirect-uri: https://api.jobtrackrpro.com/login/oauth2/code/github
+          facebook:
+            redirect-uri: https://api.jobtrackrpro.com/login/oauth2/code/facebook
 
 aws:
   cloudfront:
