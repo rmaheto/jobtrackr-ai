@@ -41,11 +41,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
       default -> log.warn("Unknown provider: {}", registrationId);
     }
 
-    final String userNameAttributeName = userRequest
-        .getClientRegistration()
-        .getProviderDetails()
-        .getUserInfoEndpoint()
-        .getUserNameAttributeName();
+    final String userNameAttributeName =
+        userRequest
+            .getClientRegistration()
+            .getProviderDetails()
+            .getUserInfoEndpoint()
+            .getUserNameAttributeName();
 
     log.info("Loaded user from {} with key attribute {}", registrationId, userNameAttributeName);
 

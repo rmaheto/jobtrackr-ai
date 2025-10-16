@@ -18,19 +18,18 @@ import com.google.api.services.calendar.model.Events;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
-import java.util.Map;
-import java.util.Objects;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -76,10 +75,7 @@ public class GoogleCalendarService implements CalendarIntegrationService {
             .setDescription(description)
             .setExtendedProperties(
                 new Event.ExtendedProperties()
-                    .setPrivate(
-                        Map.of(
-                            CREATED_BY_APP, JOB_TRACKR_APP,
-                            "sourceEntity", "FollowUp")))
+                    .setPrivate(Map.of(CREATED_BY_APP, JOB_TRACKR_APP, "sourceEntity", "FollowUp")))
             .setSource(
                 new Event.Source().setTitle(JOB_TRACKR_APP).setUrl("https://jobtrackrpro.com"))
             .setStart(startTime)
@@ -170,7 +166,11 @@ public class GoogleCalendarService implements CalendarIntegrationService {
 
   @EnsureGoogleAccessTokenFresh
   public Event updateEvent(
-      final String eventId, final String newSummary, final String newDescription, final Instant start, final Instant end)
+      final String eventId,
+      final String newSummary,
+      final String newDescription,
+      final Instant start,
+      final Instant end)
       throws IOException, GeneralSecurityException {
 
     final User user = requireGoogleUser();
@@ -179,8 +179,10 @@ public class GoogleCalendarService implements CalendarIntegrationService {
     final Event existing = service.events().get(PRIMARY, eventId).execute();
     if (newSummary != null) existing.setSummary(newSummary);
     if (newDescription != null) existing.setDescription(newDescription);
-    if(start != null) existing.setStart(new EventDateTime().setDateTime(new DateTime(start.toEpochMilli())));
-    if(end != null) existing.setEnd(new EventDateTime().setDateTime(new DateTime(end.toEpochMilli())));
+    if (start != null)
+      existing.setStart(new EventDateTime().setDateTime(new DateTime(start.toEpochMilli())));
+    if (end != null)
+      existing.setEnd(new EventDateTime().setDateTime(new DateTime(end.toEpochMilli())));
 
     final Event updated = service.events().update(PRIMARY, existing.getId(), existing).execute();
     log.info("Updated calendar event: {} ({})", updated.getSummary(), updated.getId());

@@ -43,9 +43,9 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     final User user = currentUserService.getOrCreateFromOAuth2(oAuth2User);
 
     if (authentication instanceof final OAuth2AuthenticationToken authToken) {
-      final OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
-          authToken.getAuthorizedClientRegistrationId(),
-          authToken.getName());
+      final OAuth2AuthorizedClient client =
+          authorizedClientService.loadAuthorizedClient(
+              authToken.getAuthorizedClientRegistrationId(), authToken.getName());
 
       if (client != null) {
         final OAuth2AccessToken accessToken = client.getAccessToken();
@@ -53,9 +53,10 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
         if (accessToken != null) {
           user.setGoogleAccessToken(accessToken.getTokenValue());
-          user.setTokenExpiry(accessToken.getExpiresAt() != null
-              ? accessToken.getExpiresAt().toEpochMilli()
-              : null);
+          user.setTokenExpiry(
+              accessToken.getExpiresAt() != null
+                  ? accessToken.getExpiresAt().toEpochMilli()
+                  : null);
         }
         if (refreshToken != null) {
           user.setGoogleRefreshToken(refreshToken.getTokenValue());

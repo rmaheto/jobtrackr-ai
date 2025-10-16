@@ -48,11 +48,12 @@ public class SecurityConfig {
         .oauth2Login(
             oauth2 ->
                 oauth2
-                    .failureHandler((request, response, exception) -> {
-                  log.warn("OAuth2 login failed: {}",  exception.getMessage());
-                  final String redirectUrl = frontendBaseUrl+"/login?error=access_denied";
-                  response.sendRedirect(redirectUrl);
-                })
+                    .failureHandler(
+                        (request, response, exception) -> {
+                          log.warn("OAuth2 login failed: {}", exception.getMessage());
+                          final String redirectUrl = frontendBaseUrl + "/login?error=access_denied";
+                          response.sendRedirect(redirectUrl);
+                        })
                     .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                     .successHandler(successHandler))
         .oauth2ResourceServer(

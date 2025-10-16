@@ -11,14 +11,13 @@ import com.codemaniac.jobtrackrai.repository.JobApplicationRepository;
 import com.codemaniac.jobtrackrai.service.calendar.CalendarIntegrationManager;
 import com.codemaniac.jobtrackrai.service.calendar.CalendarIntegrationService;
 import com.google.api.services.calendar.model.Event;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -69,7 +68,8 @@ public class FollowUpServiceImpl implements FollowUpService {
   @Transactional
   public FollowUpDto updateFollowUp(final Long followUpId, final FollowUpRequest request) {
     final FollowUp followUp =
-        followUpRepository.findById(followUpId)
+        followUpRepository
+            .findById(followUpId)
             .orElseThrow(() -> new NotFoundException(followUpId));
 
     // Update basic details
@@ -167,8 +167,7 @@ public class FollowUpServiceImpl implements FollowUpService {
       final Instant start = followUp.getScheduledAt().toInstant();
       final Instant end = start.plusSeconds(1800);
 
-      final String summary =
-          followUp.getType() + " • " + followUp.getJobApplication().getCompany();
+      final String summary = followUp.getType() + " • " + followUp.getJobApplication().getCompany();
       final String description =
           (followUp.getNotes() != null ? followUp.getNotes() + "\n\n" : "")
               + "Follow-up for "
@@ -183,7 +182,8 @@ public class FollowUpServiceImpl implements FollowUpService {
           followUp.getCalendarEventId(),
           followUp.getId());
     } catch (final Exception e) {
-      log.warn("Failed to update linked event for follow-up {}: {}", followUp.getId(), e.getMessage());
+      log.warn(
+          "Failed to update linked event for follow-up {}: {}", followUp.getId(), e.getMessage());
     }
   }
 }

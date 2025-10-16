@@ -2,6 +2,8 @@ package com.codemaniac.jobtrackrai.service;
 
 import com.codemaniac.jobtrackrai.entity.User;
 import com.codemaniac.jobtrackrai.repository.UserRepository;
+import java.time.Instant;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,9 +11,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import java.time.Instant;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -30,15 +29,14 @@ public class GoogleTokenRefreshService {
   private final UserRepository userRepository;
   private final RestTemplate restTemplate;
 
-
   public void refreshAccessToken(final User user) {
     if (user.getGoogleRefreshToken() == null) {
       log.warn("User {} has no refresh token", user.getEmail());
       return;
     }
 
-    if (user.getTokenExpiry() != null &&
-        Instant.now().isBefore(Instant.ofEpochMilli(user.getTokenExpiry()))) {
+    if (user.getTokenExpiry() != null
+        && Instant.now().isBefore(Instant.ofEpochMilli(user.getTokenExpiry()))) {
       // Token still valid
       return;
     }
@@ -51,16 +49,19 @@ public class GoogleTokenRefreshService {
       headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
       final String body =
-          "client_id=" + clientId +
-              "&client_secret=" + clientSecret +
-              "&refresh_token=" + user.getGoogleRefreshToken() +
-              "&grant_type=refresh_token";
+          "client_id="
+              + clientId
+              + "&client_secret="
+              + clientSecret
+              + "&refresh_token="
+              + user.getGoogleRefreshToken()
+              + "&grant_type=refresh_token";
 
       final HttpEntity<String> entity = new HttpEntity<>(body, headers);
 
       final ResponseEntity<Map<String, Object>> response =
-          restTemplate.exchange(refreshTokenUrl, HttpMethod.POST, entity,
-              new ParameterizedTypeReference<>() {});
+          restTemplate.exchange(
+              refreshTokenUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
 
       final Map<String, Object> map = response.getBody();
       if (response.getStatusCode().is2xxSuccessful() && map != null) {
@@ -70,8 +71,7 @@ public class GoogleTokenRefreshService {
         if (newAccessToken != null) {
           user.setGoogleAccessToken(newAccessToken);
           if (expiresIn != null) {
-            user.setTokenExpiry(
-                Instant.now().plusSeconds(expiresIn.longValue()).toEpochMilli());
+            user.setTokenExpiry(Instant.now().plusSeconds(expiresIn.longValue()).toEpochMilli());
           }
           userRepository.save(user);
           log.info("Access token refreshed successfully for {}", user.getEmail());
@@ -84,6 +84,4 @@ public class GoogleTokenRefreshService {
       log.error("Error refreshing token for {}: {}", user.getEmail(), e.getMessage());
     }
   }
-
 }
-
