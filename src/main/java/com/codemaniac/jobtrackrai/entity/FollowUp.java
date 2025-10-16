@@ -47,6 +47,10 @@ public class FollowUp implements Auditable {
   private String notes;
   private boolean completed = false;
 
+  // provider-agnostic calendar reference
+  private String calendarEventId;
+  private String calendarProvider;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "job_application_id", nullable = false)
   private JobApplication jobApplication;

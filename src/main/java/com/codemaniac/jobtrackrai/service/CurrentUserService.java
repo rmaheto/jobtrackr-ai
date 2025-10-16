@@ -83,6 +83,10 @@ public class CurrentUserService {
             });
   }
 
+  public User save(final User user) {
+    return userRepository.save(user);
+  }
+
   private User updateIfChanged(
       final User existing, final String name, final String pictureUrl, final String provider) {
     boolean updated = false;

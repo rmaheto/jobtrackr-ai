@@ -20,7 +20,7 @@ spring:
     active: desktop
   datasource:
 #    url: jdbc:postgresql://host.docker.internal:5432/jobtrackr-db
-    url: jdbc:postgresql://localhost:5433/jobtrackr-db
+    url: jdbc:postgresql://localhost:5432/jobtrackr-db
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD.key}
     driver-class-name: org.postgresql.Driver
@@ -47,7 +47,12 @@ spring:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope: openid, profile, email
+            scope:
+              - openid
+              - profile
+              - email
+              - https://www.googleapis.com/auth/calendar
+            client-name: Google Calendar
 
           github:
             client-id: ${GITHUB_CLIENT_ID}
@@ -73,7 +78,10 @@ spring:
 
         provider:
           google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&prompt=consent
+            token-uri: https://oauth2.googleapis.com/token
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
           linkedin:
             authorization-uri: https://www.linkedin.com/oauth/v2/authorization
             token-uri: https://www.linkedin.com/oauth/v2/accessToken
@@ -108,5 +116,11 @@ aws:
 
 resume:
   maxFileSize: 5242880
+
+google:
+  refreshTokenUrl: https://oauth2.googleapis.com/token
+  calendar:
+    scope: https://www.googleapis.com/auth/calendar
+    app-name: JobTrackr Pro
 
 

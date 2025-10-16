@@ -9,4 +9,6 @@ public interface FollowUpRepository extends JpaRepository<FollowUp, Long> {
   List<FollowUp> findByJobApplicationId(Long jobApplicationId);
 
   List<FollowUp> findByScheduledAtBetween(OffsetDateTime from, OffsetDateTime to);
+
+  List<FollowUp> findAllByJobApplication_User_Id(Long userId);
 }

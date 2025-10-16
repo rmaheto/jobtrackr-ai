@@ -43,6 +43,13 @@ public class User implements Auditable {
   private String name;
   private String pictureUrl;
   private String provider;
+  @Column(length = 2048)
+  private String googleAccessToken;
+
+  @Column(length = 2048)
+  private String googleRefreshToken;
+
+  private Long tokenExpiry;
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<JobApplication> applications = new ArrayList<>();

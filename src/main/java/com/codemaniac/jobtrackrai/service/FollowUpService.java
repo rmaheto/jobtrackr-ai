@@ -10,7 +10,9 @@ public interface FollowUpService {
 
   List<FollowUpDto> getFollowUps(Long applicationId);
 
-  public List<FollowUpDto> findFollowUpsBetween(final OffsetDateTime from, final OffsetDateTime to);
+  List<FollowUpDto> findFollowUpsBetween(final OffsetDateTime from, final OffsetDateTime to);
+
+  FollowUpDto updateFollowUp(final Long followUpId, final FollowUpRequest request);
 
   FollowUpDto markCompleted(Long followUpId);
 
