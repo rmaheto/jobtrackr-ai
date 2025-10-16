@@ -3,15 +3,14 @@ package com.codemaniac.jobtrackrai.controller;
 import com.codemaniac.jobtrackrai.model.ApiResponse;
 import com.codemaniac.jobtrackrai.service.calendar.CalendarIntegrationManager;
 import com.google.api.services.calendar.model.Event;
+import java.time.Instant;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.Instant;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/calendar")

@@ -50,7 +50,6 @@ public class FollowUpController {
     return ResponseEntity.ok(ApiResponse.of("OK", "Follow-up updated", dto));
   }
 
-
   @PatchMapping("/followups/{followUpId}/complete")
   public ResponseEntity<ApiResponse<FollowUpDto>> markCompleted(
       @PathVariable final Long followUpId) {

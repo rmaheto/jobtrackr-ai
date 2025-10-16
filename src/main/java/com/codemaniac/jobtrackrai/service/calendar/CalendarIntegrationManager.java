@@ -2,10 +2,9 @@ package com.codemaniac.jobtrackrai.service.calendar;
 
 import com.codemaniac.jobtrackrai.entity.User;
 import com.codemaniac.jobtrackrai.service.CurrentUserService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
