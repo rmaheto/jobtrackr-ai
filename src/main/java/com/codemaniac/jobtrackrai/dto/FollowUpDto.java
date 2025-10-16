@@ -19,4 +19,6 @@ public class FollowUpDto {
   private String applicationId;
   private String company;
   private String applicationTitle;
+  private String calendarEventId;
+  private String calendarProvider;
 }

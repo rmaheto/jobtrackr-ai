@@ -42,6 +42,15 @@ public class FollowUpController {
             "OK", "Follow-ups retrieved", followUpService.findFollowUpsBetween(from, to)));
   }
 
+  @PutMapping("/followups/{followUpId}")
+  public ResponseEntity<ApiResponse<FollowUpDto>> updateFollowUp(
+      @PathVariable final Long followUpId, @RequestBody final FollowUpRequest request) {
+
+    final FollowUpDto dto = followUpService.updateFollowUp(followUpId, request);
+    return ResponseEntity.ok(ApiResponse.of("OK", "Follow-up updated", dto));
+  }
+
+
   @PatchMapping("/followups/{followUpId}/complete")
   public ResponseEntity<ApiResponse<FollowUpDto>> markCompleted(
       @PathVariable final Long followUpId) {

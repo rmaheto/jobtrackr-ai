@@ -41,7 +41,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
       default -> log.warn("Unknown provider: {}", registrationId);
     }
 
-    return new DefaultOAuth2User(oAuth2User.getAuthorities(), attributes, "id");
+    final String userNameAttributeName = userRequest
+        .getClientRegistration()
+        .getProviderDetails()
+        .getUserInfoEndpoint()
+        .getUserNameAttributeName();
+
+    log.info("Loaded user from {} with key attribute {}", registrationId, userNameAttributeName);
+
+    return new DefaultOAuth2User(oAuth2User.getAuthorities(), attributes, userNameAttributeName);
   }
 
   private void handleGitHub(

@@ -5,6 +5,7 @@ import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,11 +18,15 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @EnableWebSecurity
 @Configuration
+@Slf4j
 @RequiredArgsConstructor
 public class SecurityConfig {
 
   @Value("${jwt.secret}")
   private String secret;
+
+  @Value("${app.frontend.url}")
+  private String frontendBaseUrl;
 
   private final JwtAuthConverter jwtAuthConverter;
   private final CustomOAuth2SuccessHandler successHandler;
@@ -34,7 +39,7 @@ public class SecurityConfig {
         .cors(cors -> cors.configurationSource(customCorsConfiguration))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/actuator/health", "/actuator/info")
+                auth.requestMatchers("/actuator/health", "/actuator/info", "/api/auth/logout")
                     .permitAll()
                     .requestMatchers("/api/**")
                     .authenticated()
@@ -43,6 +48,11 @@ public class SecurityConfig {
         .oauth2Login(
             oauth2 ->
                 oauth2
+                    .failureHandler((request, response, exception) -> {
+                  log.warn("OAuth2 login failed: {}",  exception.getMessage());
+                  final String redirectUrl = frontendBaseUrl+"/login?error=access_denied";
+                  response.sendRedirect(redirectUrl);
+                })
                     .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                     .successHandler(successHandler))
         .oauth2ResourceServer(
