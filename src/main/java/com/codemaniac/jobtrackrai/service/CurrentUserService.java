@@ -1,6 +1,13 @@
 package com.codemaniac.jobtrackrai.service;
 
 import com.codemaniac.jobtrackrai.entity.User;
+import com.codemaniac.jobtrackrai.entity.UserPreference;
+import com.codemaniac.jobtrackrai.enums.ExportFormat;
+import com.codemaniac.jobtrackrai.enums.FollowUpReminder;
+import com.codemaniac.jobtrackrai.enums.LandingPage;
+import com.codemaniac.jobtrackrai.enums.Status;
+import com.codemaniac.jobtrackrai.enums.Theme;
+import com.codemaniac.jobtrackrai.repository.UserPreferenceRepository;
 import com.codemaniac.jobtrackrai.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CurrentUserService {
 
   private final UserRepository userRepository;
+  private final UserPreferenceRepository preferenceRepository;
 
   /** Retrieve the currently authenticated user based on JWT. */
   public User getCurrentUser() {
@@ -35,17 +43,24 @@ public class CurrentUserService {
     final String name = jwt.getClaimAsString("name");
     final String pictureUrl = jwt.getClaimAsString("pictureUrl");
 
-    return userRepository
-        .findByEmail(email)
-        .orElseGet(
-            () ->
-                userRepository.save(
-                    User.builder()
-                        .externalId(externalId)
-                        .email(email)
-                        .name(name)
-                        .pictureUrl(pictureUrl)
-                        .build()));
+    final User user =
+        userRepository
+            .findByEmail(email)
+            .orElseGet(
+                () ->
+                    userRepository.save(
+                        User.builder()
+                            .externalId(externalId)
+                            .email(email)
+                            .name(name)
+                            .pictureUrl(pictureUrl)
+                            .build()));
+
+    preferenceRepository
+        .findByUserId(user.getId())
+        .orElseGet(() -> preferenceRepository.save(createDefaultsFor(user)));
+
+    return user;
   }
 
   /**
@@ -72,14 +87,17 @@ public class CurrentUserService {
         .orElseGet(
             () -> {
               log.info("Provisioning new user: {}", email);
-              return userRepository.save(
-                  User.builder()
-                      .externalId(externalId)
-                      .email(email)
-                      .name(name)
-                      .pictureUrl(pictureUrl)
-                      .provider(provider)
-                      .build());
+              final User newUser =
+                  userRepository.save(
+                      User.builder()
+                          .externalId(externalId)
+                          .email(email)
+                          .name(name)
+                          .pictureUrl(pictureUrl)
+                          .provider(provider)
+                          .build());
+              createDefaultPreferences(newUser);
+              return newUser;
             });
   }
 
@@ -107,5 +125,46 @@ public class CurrentUserService {
     }
 
     return updated ? userRepository.save(existing) : existing;
+  }
+
+  private void createDefaultPreferences(final User user) {
+    try {
+      if (preferenceRepository.findByUserId(user.getId()).isEmpty()) {
+        preferenceRepository.save(createDefaultsFor(user));
+        log.info("Default preferences created for new user: {}", user.getEmail());
+      }
+    } catch (Exception e) {
+      log.error(
+          "Failed to create default preferences for user {}: {}", user.getEmail(), e.getMessage());
+    }
+  }
+
+  private UserPreference createDefaultsFor(final User user) {
+    return UserPreference.builder()
+        .user(user)
+        .theme(Theme.LIGHT)
+        .language("English")
+        .timezone("Eastern Time (UTC-5)")
+        .dateFormat("MM/DD/YYYY (US)")
+        .profileVisibility("Public")
+        .showContactInfo(true)
+        .allowSearchIndexing(true)
+        .showActivityStatus(false)
+        .emailNotifications(true)
+        .pushNotifications(true)
+        .smsNotifications(false)
+        .statusUpdates(true)
+        .interviewReminders(true)
+        .weeklyDigest(true)
+        .marketingEmails(false)
+        .landingPage(LandingPage.DASHBOARD)
+        .itemsPerPage(10)
+        .compactView(false)
+        .showQuickStats(true)
+        .defaultAppStatus(Status.APPLIED)
+        .followUpReminder(FollowUpReminder.ONE_WEEK)
+        .exportFormat(ExportFormat.PDF)
+        .autoSaveDrafts(true)
+        .build();
   }
 }

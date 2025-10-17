@@ -13,8 +13,12 @@ public class AuditInterceptor {
 
   @PrePersist
   public void setCreationAudit(final Object entity) {
-    if (entity instanceof final Auditable auditable && ObjectUtils.isEmpty(auditable.getAudit())) {
-      auditable.setAudit(new Audit(SecurityUtils.getCurrentUsername(), Audit.PROGRAM));
+    if (entity instanceof final Auditable auditable) {
+      Audit audit = auditable.getAudit();
+      if (audit == null || ObjectUtils.isEmpty(audit.getCreateTimestamp())) {
+        audit = new Audit(SecurityUtils.getCurrentUsername(), Audit.PROGRAM);
+      }
+      auditable.setAudit(audit);
     }
   }
 
@@ -22,10 +26,14 @@ public class AuditInterceptor {
   public void setUpdateAudit(final Object entity) {
     if (entity instanceof final Auditable auditable) {
       Audit audit = auditable.getAudit();
-      if (ObjectUtils.isEmpty(audit)) {
+
+      if (audit == null) {
         audit = new Audit();
+        auditable.setAudit(audit);
       }
+
       audit.setUpdates(SecurityUtils.getCurrentUsername(), Audit.PROGRAM);
+      auditable.setAudit(audit);
     }
   }
 }

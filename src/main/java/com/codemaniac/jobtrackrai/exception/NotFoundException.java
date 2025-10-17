@@ -5,4 +5,8 @@ public class NotFoundException extends RuntimeException {
   public NotFoundException(final Long id) {
     super("JobApplication  with id " + id + " not found");
   }
+
+  public NotFoundException(final String id) {
+    super("JobApplication  with id " + id + " not found");
+  }
 }
