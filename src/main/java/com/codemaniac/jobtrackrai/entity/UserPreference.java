@@ -68,4 +68,32 @@ public class UserPreference implements Auditable {
   private boolean autoSaveDrafts;
 
   @Embedded private Audit audit = new Audit();
+
+  public static UserPreference defaultPreference() {
+    return UserPreference.builder()
+        .theme(Theme.LIGHT)
+        .language("English")
+        .timezone("Eastern Time (UTC-5)")
+        .dateFormat("MM/DD/YYYY (US)")
+        .profileVisibility("Public")
+        .showContactInfo(true)
+        .allowSearchIndexing(true)
+        .showActivityStatus(false)
+        .emailNotifications(true)
+        .pushNotifications(true)
+        .smsNotifications(false)
+        .statusUpdates(true)
+        .interviewReminders(true)
+        .weeklyDigest(true)
+        .marketingEmails(false)
+        .landingPage(LandingPage.DASHBOARD)
+        .itemsPerPage(10)
+        .compactView(false)
+        .showQuickStats(true)
+        .defaultAppStatus(Status.APPLIED)
+        .followUpReminder(FollowUpReminder.ONE_WEEK)
+        .exportFormat(ExportFormat.PDF)
+        .autoSaveDrafts(true)
+        .build();
+  }
 }

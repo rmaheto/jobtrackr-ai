@@ -4,8 +4,10 @@ import com.codemaniac.jobtrackrai.dto.DashboardResponse;
 import com.codemaniac.jobtrackrai.dto.RecentApplicationDto;
 import com.codemaniac.jobtrackrai.entity.JobApplication;
 import com.codemaniac.jobtrackrai.enums.Status;
+import com.codemaniac.jobtrackrai.factory.DateRepresentationFactory;
 import com.codemaniac.jobtrackrai.model.Audit;
 import com.codemaniac.jobtrackrai.repository.JobApplicationRepository;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,6 +20,8 @@ public class DashboardService {
 
   private final JobApplicationRepository repository;
   private final CurrentUserService currentUserService;
+  private final DateRepresentationFactory dateFactory;
+  private final UserPreferenceService userPreferenceService;
 
   public DashboardResponse getDashboardData() {
     final var user = currentUserService.getCurrentUser();
@@ -36,7 +40,7 @@ public class DashboardService {
 
     final List<RecentApplicationDto> recent =
         apps.stream()
-            .limit(5)
+            .limit(userPreferenceService.getUserPreferences().getItemsPerPage())
             .map(
                 a ->
                     RecentApplicationDto.builder()
@@ -44,7 +48,11 @@ public class DashboardService {
                         .company(a.getCompany())
                         .role(a.getRole())
                         .status(a.getStatus().name())
-                        .appliedDate(a.getAppliedDate())
+                        .appliedDate(
+                            a.getAppliedDate() != null
+                                ? dateFactory.create(
+                                    a.getAppliedDate().atStartOfDay().toInstant(ZoneOffset.UTC))
+                                : null)
                         .build())
             .toList();
 

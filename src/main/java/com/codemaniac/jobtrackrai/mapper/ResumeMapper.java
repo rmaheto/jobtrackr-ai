@@ -1,37 +1,74 @@
 package com.codemaniac.jobtrackrai.mapper;
 
-import com.codemaniac.jobtrackrai.dto.JobApplicationSummaryDto;
-import com.codemaniac.jobtrackrai.dto.ResumeDto;
-import com.codemaniac.jobtrackrai.entity.JobApplication;
-import com.codemaniac.jobtrackrai.entity.Resume;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import com.codemaniac.jobtrackrai.dto.*;
+import com.codemaniac.jobtrackrai.entity.*;
+import com.codemaniac.jobtrackrai.enums.ResumeFileType;
+import com.codemaniac.jobtrackrai.factory.DateRepresentationFactory;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Objects;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public interface ResumeMapper {
+@Component
+@RequiredArgsConstructor
+public class ResumeMapper {
 
-  @Mapping(source = "audit.createTimestamp", target = "uploadDate")
-  @Mapping(source = "user.id", target = "userId")
-  ResumeDto toDto(Resume resume);
+  private final DateRepresentationFactory dateFactory;
+  private final JobApplicationMapper jobAppMapper;
 
-  @Mapping(target = "audit.createTimestamp", source = "uploadDate")
-  @Mapping(target = "user", ignore = true)
-  Resume toEntity(ResumeDto dto);
+  public ResumeDto toDto(final Resume entity) {
+    if (entity == null) return null;
 
-  @Mapping(source = "id", target = "id")
-  @Mapping(source = "company", target = "company")
-  @Mapping(source = "role", target = "role")
-  @Mapping(source = "status", target = "status")
-  @Mapping(source = "appliedDate", target = "appliedDate")
-  JobApplicationSummaryDto toJobApplicationSummaryDto(JobApplication jobApplication);
+    return ResumeDto.builder()
+        .id(entity.getId())
+        .originalName(entity.getOriginalName())
+        .fileType(entity.getFileType().name())
+        .size(entity.getSize())
+        .uploadDate(
+            entity.getAudit() != null && entity.getAudit().getCreateTimestamp() != null
+                ? dateFactory.create(
+                    entity.getAudit().getCreateTimestamp().toInstant(ZoneOffset.UTC))
+                : null)
+        .linkedApplications(
+            entity.getJobApplications() != null ? entity.getJobApplications().size() : 0)
+        .userId(entity.getUser() != null ? entity.getUser().getId() : null)
+        .previewUrl(entity.getS3Key())
+        .jobApplications(mapJobApplications(entity.getJobApplications()))
+        .build();
+  }
 
-  @AfterMapping
-  default void mapJobApplications(final Resume resume, @MappingTarget final ResumeDto dto) {
-    if (resume.getJobApplications() != null) {
-      dto.setJobApplications(
-          resume.getJobApplications().stream().map(this::toJobApplicationSummaryDto).toList());
+  private List<JobApplicationSummaryDto> mapJobApplications(final List<JobApplication> apps) {
+    if (apps == null) return List.of();
+    return apps.stream().filter(Objects::nonNull).map(jobAppMapper::toSummaryDto).toList();
+  }
+
+  public Resume toEntity(final ResumeDto dto, final User user) {
+    if (dto == null) return null;
+
+    final Resume resume = new Resume();
+    resume.setId(dto.getId());
+    resume.setOriginalName(dto.getOriginalName());
+    resume.setFileType(parseFileType(dto.getFileType()));
+    resume.setSize(dto.getSize());
+    resume.setS3Key(dto.getPreviewUrl());
+    resume.setUser(user);
+    return resume;
+  }
+
+  private ResumeFileType parseFileType(final String fileType) {
+    if (fileType == null) return null;
+    try {
+      return ResumeFileType.valueOf(fileType.toUpperCase());
+    } catch (final IllegalArgumentException ignored) {
+      // not a plain enum name, try MIME type next
+    }
+
+    // Handle MIME type (PDF, DOCX)
+    try {
+      return ResumeFileType.fromMimeType(fileType);
+    } catch (final IllegalArgumentException ex) {
+      throw new IllegalArgumentException("Unsupported file type: " + fileType, ex);
     }
   }
 }

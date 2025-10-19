@@ -48,12 +48,12 @@ class UserPreferenceServiceImplTest {
   }
 
   @Test
-  void getUserPreferences_whenExistingPreference_shouldReturnMappedDto() {
+  void getUserPreferences_Dto_whenExistingPreference_shouldReturnMappedDto() {
     when(currentUserService.getCurrentUser()).thenReturn(user);
     when(preferenceRepository.findByUserId(user.getId())).thenReturn(Optional.of(entity));
     when(mapper.toDto(entity)).thenReturn(dto);
 
-    final UserPreferenceDto result = service.getUserPreferences();
+    final UserPreferenceDto result = service.getUserPreferencesDto();
 
     assertNotNull(result);
     verify(preferenceRepository).findByUserId(user.getId());
@@ -61,7 +61,7 @@ class UserPreferenceServiceImplTest {
   }
 
   @Test
-  void getUserPreferences_whenNotFound_shouldThrowNotFoundException() {
+  void getUserPreferences_Dto_whenNotFound_shouldThrowNotFoundException() {
     when(currentUserService.getCurrentUser()).thenReturn(user);
     when(preferenceRepository.findByUserId(user.getId())).thenReturn(Optional.empty());
 

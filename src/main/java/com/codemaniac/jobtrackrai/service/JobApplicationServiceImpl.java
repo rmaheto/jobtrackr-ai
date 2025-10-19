@@ -60,27 +60,24 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         request.getCompany(),
         request.getRole());
 
-    final JobApplication entity = jobApplicationMapper.toEntity(request);
+    final Resume resume =
+        request
+            .getLinkedResumeId()
+            .map(
+                resumeId ->
+                    resumeRepository
+                        .findById(resumeId)
+                        .filter(r -> r.getUser().equals(user))
+                        .orElseThrow(
+                            () ->
+                                new IllegalArgumentException(
+                                    "Invalid resume ID or not owned by user")))
+            .orElse(null);
+
+    final JobApplication entity = jobApplicationMapper.toEntity(request, resume);
     entity.setStatus(Status.APPLIED);
     entity.setAppliedDate(LocalDate.now());
     entity.setUser(user);
-
-    request
-        .getLinkedResumeId()
-        .ifPresent(
-            resumeId -> {
-              final Resume resume =
-                  resumeRepository
-                      .findById(resumeId)
-                      .filter(r -> r.getUser().equals(user))
-                      .orElseThrow(
-                          () ->
-                              new IllegalArgumentException(
-                                  "Invalid resume ID or not owned by user"));
-
-              resume.addJobApplication(entity);
-            });
-
     final JobApplication saved = repository.save(entity);
 
     if (log.isDebugEnabled()) {
@@ -109,6 +106,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
   @Override
   public Page<JobApplicationDto> search(
       final JobApplicationSearchRequest request, final Pageable pageable) {
+
     final User user = currentUserService.getCurrentUser();
     log.info("Searching job applications for userId={} with filters={}", user.getId(), request);
 

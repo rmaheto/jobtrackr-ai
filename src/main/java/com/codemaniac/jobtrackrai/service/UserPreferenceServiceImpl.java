@@ -4,7 +4,6 @@ import com.codemaniac.jobtrackrai.dto.UserPreferenceDto;
 import com.codemaniac.jobtrackrai.entity.User;
 import com.codemaniac.jobtrackrai.entity.UserPreference;
 import com.codemaniac.jobtrackrai.exception.InternalServerException;
-import com.codemaniac.jobtrackrai.exception.NotFoundException;
 import com.codemaniac.jobtrackrai.mapper.UserPreferenceMapper;
 import com.codemaniac.jobtrackrai.repository.UserPreferenceRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,16 +20,28 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
   private final UserPreferenceRepository preferenceRepository;
   private final UserPreferenceMapper mapper;
 
+  private static final String PREFS_NOT_FOUND_TEMPLATE =
+      "User preferences not found for userId={} — using defaults.";
+
   @Override
   @Transactional(readOnly = true)
-  public UserPreferenceDto getUserPreferences() {
-
+  public UserPreferenceDto getUserPreferencesDto() {
     final User user = currentUserService.getCurrentUser();
+
     return preferenceRepository
         .findByUserId(user.getId())
         .map(mapper::toDto)
-        .orElseThrow(
-            () -> new NotFoundException("User preferences not found for ID: " + user.getId()));
+        .orElseGet(() -> mapper.toDto(handleMissingPreference(user)));
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public UserPreference getUserPreferences() {
+    final User user = currentUserService.getCurrentUser();
+
+    return preferenceRepository
+        .findByUserId(user.getId())
+        .orElseGet(() -> handleMissingPreference(user));
   }
 
   @Override
@@ -63,5 +74,10 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
           "Unexpected error updating preferences for user {}: {}", user.getId(), e.getMessage());
       throw new InternalServerException("Could not update preferences. Please try again later.");
     }
+  }
+
+  private UserPreference handleMissingPreference(final User user) {
+    log.warn("[UserPreferenceService] {} — userId={}", PREFS_NOT_FOUND_TEMPLATE, user.getId());
+    return UserPreference.defaultPreference();
   }
 }

@@ -8,8 +8,11 @@ import lombok.Getter;
 public enum LandingPage {
   DASHBOARD("Dashboard"),
   APPLICATIONS("Applications"),
-  FOLLOWUPS("Follow-ups"),
-  SETTINGS("Settings");
+  ANALYTICS("Analytics"),
+  RESUMES("Resumes"),
+  CALENDAR("Calendar"),
+  PREFERENCES("preferences"),
+  PROFILE("Profile");
 
   private final String label;
 }
