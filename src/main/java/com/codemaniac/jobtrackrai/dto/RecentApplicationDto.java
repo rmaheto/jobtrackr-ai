@@ -1,6 +1,5 @@
 package com.codemaniac.jobtrackrai.dto;
 
-import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,5 +10,5 @@ public class RecentApplicationDto {
   private String company;
   private String role;
   private String status;
-  private LocalDate appliedDate;
+  private DateRepresentation appliedDate;
 }

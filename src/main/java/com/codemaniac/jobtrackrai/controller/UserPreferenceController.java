@@ -16,7 +16,7 @@ public class UserPreferenceController {
 
   @GetMapping
   public ResponseEntity<ApiResponse<UserPreferenceDto>> getPreferences() {
-    final var dto = preferenceService.getUserPreferences();
+    final var dto = preferenceService.getUserPreferencesDto();
     return ResponseEntity.ok(ApiResponse.of("OK", "User preferences retrieved", dto));
   }
 
