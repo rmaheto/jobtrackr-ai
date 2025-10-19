@@ -40,10 +40,7 @@ public class ResumeMapper {
 
   private List<JobApplicationSummaryDto> mapJobApplications(final List<JobApplication> apps) {
     if (apps == null) return List.of();
-    return apps.stream()
-        .filter(Objects::nonNull)
-        .map(jobAppMapper::toSummaryDto)
-        .toList();
+    return apps.stream().filter(Objects::nonNull).map(jobAppMapper::toSummaryDto).toList();
   }
 
   public Resume toEntity(final ResumeDto dto, final User user) {
