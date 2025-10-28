@@ -17,7 +17,7 @@ public class ResumeMapper {
   private final DateRepresentationFactory dateFactory;
   private final JobApplicationMapper jobAppMapper;
 
-  public ResumeDto toDto(final Resume entity) {
+  public ResumeDto toDto(final Resume entity, final UserPreference userPreference) {
     if (entity == null) return null;
 
     return ResumeDto.builder()
@@ -28,19 +28,24 @@ public class ResumeMapper {
         .uploadDate(
             entity.getAudit() != null && entity.getAudit().getCreateTimestamp() != null
                 ? dateFactory.create(
-                    entity.getAudit().getCreateTimestamp().toInstant(ZoneOffset.UTC))
+                    entity.getAudit().getCreateTimestamp().toInstant(ZoneOffset.UTC),
+                    userPreference)
                 : null)
         .linkedApplications(
             entity.getJobApplications() != null ? entity.getJobApplications().size() : 0)
         .userId(entity.getUser() != null ? entity.getUser().getId() : null)
         .previewUrl(entity.getS3Key())
-        .jobApplications(mapJobApplications(entity.getJobApplications()))
+        .jobApplications(mapJobApplications(entity.getJobApplications(), userPreference))
         .build();
   }
 
-  private List<JobApplicationSummaryDto> mapJobApplications(final List<JobApplication> apps) {
+  private List<JobApplicationSummaryDto> mapJobApplications(
+      final List<JobApplication> apps, final UserPreference userPreference) {
     if (apps == null) return List.of();
-    return apps.stream().filter(Objects::nonNull).map(jobAppMapper::toSummaryDto).toList();
+    return apps.stream()
+        .filter(Objects::nonNull)
+        .map(jb -> jobAppMapper.toSummaryDto(jb, userPreference))
+        .toList();
   }
 
   public Resume toEntity(final ResumeDto dto, final User user) {

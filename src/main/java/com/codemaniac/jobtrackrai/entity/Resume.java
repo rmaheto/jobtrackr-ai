@@ -4,6 +4,7 @@ import com.codemaniac.jobtrackrai.enums.ResumeFileType;
 import com.codemaniac.jobtrackrai.interceptor.AuditInterceptor;
 import com.codemaniac.jobtrackrai.model.Audit;
 import com.codemaniac.jobtrackrai.model.Auditable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -25,6 +26,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "resumes")
@@ -52,6 +54,8 @@ public class Resume implements Auditable {
   private Integer linkedApplications = 0;
 
   @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = false)
+  @ToString.Exclude
+  @JsonIgnore
   private List<JobApplication> jobApplications = new ArrayList<>();
 
   @ManyToOne(fetch = FetchType.LAZY)

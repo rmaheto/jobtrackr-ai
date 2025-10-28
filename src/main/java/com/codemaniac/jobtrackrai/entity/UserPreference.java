@@ -8,6 +8,7 @@ import com.codemaniac.jobtrackrai.enums.Theme;
 import com.codemaniac.jobtrackrai.interceptor.AuditInterceptor;
 import com.codemaniac.jobtrackrai.model.Audit;
 import com.codemaniac.jobtrackrai.model.Auditable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,6 +28,8 @@ public class UserPreference implements Auditable {
 
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false, unique = true)
+  @ToString.Exclude
+  @JsonIgnore
   private User user;
 
   @Enumerated(EnumType.STRING)

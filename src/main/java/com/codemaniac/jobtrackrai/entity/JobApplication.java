@@ -4,6 +4,7 @@ import com.codemaniac.jobtrackrai.enums.Status;
 import com.codemaniac.jobtrackrai.interceptor.AuditInterceptor;
 import com.codemaniac.jobtrackrai.model.Audit;
 import com.codemaniac.jobtrackrai.model.Auditable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -23,6 +24,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "job_applications")
@@ -61,10 +63,14 @@ public class JobApplication implements Auditable {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "resume_id")
+  @ToString.Exclude
+  @JsonIgnore
   private Resume resume;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
+  @ToString.Exclude
+  @JsonIgnore
   private User user;
 
   @Embedded private Audit audit = new Audit();

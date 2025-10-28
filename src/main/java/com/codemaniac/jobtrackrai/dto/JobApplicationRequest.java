@@ -24,4 +24,5 @@ public class JobApplicationRequest {
   private Optional<String> status = Optional.empty();
   private Optional<String> notes = Optional.empty();
   private Optional<Long> linkedResumeId = Optional.empty();
+  private Optional<String> appliedDate = Optional.empty();
 }

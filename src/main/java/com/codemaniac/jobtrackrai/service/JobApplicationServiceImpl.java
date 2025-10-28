@@ -6,10 +6,12 @@ import com.codemaniac.jobtrackrai.dto.JobApplicationSearchRequest;
 import com.codemaniac.jobtrackrai.entity.JobApplication;
 import com.codemaniac.jobtrackrai.entity.Resume;
 import com.codemaniac.jobtrackrai.entity.User;
+import com.codemaniac.jobtrackrai.entity.UserPreference;
 import com.codemaniac.jobtrackrai.enums.Status;
 import com.codemaniac.jobtrackrai.exception.BadRequestException;
 import com.codemaniac.jobtrackrai.exception.ExcelExportException;
 import com.codemaniac.jobtrackrai.exception.NotFoundException;
+import com.codemaniac.jobtrackrai.factory.DateRepresentationFactory;
 import com.codemaniac.jobtrackrai.mapper.JobApplicationMapper;
 import com.codemaniac.jobtrackrai.model.Audit;
 import com.codemaniac.jobtrackrai.repository.JobApplicationRepository;
@@ -46,13 +48,16 @@ public class JobApplicationServiceImpl implements JobApplicationService {
   private final CurrentUserService currentUserService;
   private final JobScraperService jobScraperService;
   private final JobApplicationAiService jobApplicationAiService;
+  private final UserPreferenceService userPreferenceService;
   private final JobApplicationMapper jobApplicationMapper;
+  private final DateRepresentationFactory dateRepresentationFactory;
 
   private static final String JOB_NOT_FOUND = "Job application not found id={}";
 
   @Override
   public JobApplicationDto create(final JobApplicationRequest request) {
     final User user = currentUserService.getCurrentUser();
+    final UserPreference pref = userPreferenceService.getUserPreferences();
 
     log.info(
         "Creating job application for user={} with company={}, role={}",
@@ -75,7 +80,11 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             .orElse(null);
 
     final JobApplication entity = jobApplicationMapper.toEntity(request, resume);
-    entity.setStatus(Status.APPLIED);
+    entity.setAppliedDate(
+        request
+            .getAppliedDate()
+            .map(dateRepresentationFactory::parseFrontendLocalDate)
+            .orElse(LocalDate.now()));
     entity.setAppliedDate(LocalDate.now());
     entity.setUser(user);
     final JobApplication saved = repository.save(entity);
@@ -84,7 +93,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
       log.debug("Job application persisted with id={} for user={}", saved.getId(), user.getEmail());
     }
 
-    return jobApplicationMapper.toDto(saved);
+    return jobApplicationMapper.toDto(saved, pref);
   }
 
   @Override
@@ -108,11 +117,13 @@ public class JobApplicationServiceImpl implements JobApplicationService {
       final JobApplicationSearchRequest request, final Pageable pageable) {
 
     final User user = currentUserService.getCurrentUser();
+    final UserPreference pref = userPreferenceService.getUserPreferences();
+
     log.info("Searching job applications for userId={} with filters={}", user.getId(), request);
 
     return repository
         .findAll(JobApplicationSpecifications.forSearch(request, user.getId()), pageable)
-        .map(jobApplicationMapper::toDto);
+        .map(jobApplication -> jobApplicationMapper.toDto(jobApplication, pref));
   }
 
   @Override
@@ -129,7 +140,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                     app.getCompany(),
                     app.getRole());
               }
-              return jobApplicationMapper.toDto(app);
+              return jobApplicationMapper.toDto(app, userPreferenceService.getUserPreferences());
             })
         .orElseThrow(
             () -> {
@@ -142,6 +153,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
   @Override
   public JobApplicationDto update(final Long id, final JobApplicationRequest request) {
     final User user = currentUserService.getCurrentUser();
+    final UserPreference pref = userPreferenceService.getUserPreferences();
     final JobApplication jobApplication =
         findJobApplication(id).orElseThrow(() -> new NotFoundException(id));
 
@@ -154,6 +166,12 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     request.getJobLink().ifPresent(jobApplication::setJobLink);
     request.getSalary().ifPresent(jobApplication::setSalary);
     request.getNotes().ifPresent(jobApplication::setNotes);
+    request
+        .getAppliedDate()
+        .ifPresent(
+            dateStr ->
+                jobApplication.setAppliedDate(
+                    dateRepresentationFactory.parseFrontendLocalDate(dateStr)));
     request
         .getStatus()
         .ifPresent(
@@ -197,7 +215,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
       jobApplication.getResume().removeJobApplication(jobApplication);
     }
 
-    return jobApplicationMapper.toDto(jobApplication);
+    return jobApplicationMapper.toDto(jobApplication, pref);
   }
 
   @Override
@@ -209,7 +227,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
 
     jobApplication.setStatus(Status.valueOf(status));
 
-    return jobApplicationMapper.toDto(jobApplication);
+    return jobApplicationMapper.toDto(jobApplication, userPreferenceService.getUserPreferences());
   }
 
   @Override

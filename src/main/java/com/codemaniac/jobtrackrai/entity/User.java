@@ -3,11 +3,12 @@ package com.codemaniac.jobtrackrai.entity;
 import com.codemaniac.jobtrackrai.interceptor.AuditInterceptor;
 import com.codemaniac.jobtrackrai.model.Audit;
 import com.codemaniac.jobtrackrai.model.Auditable;
-import jakarta.persistence.CascadeType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,6 +21,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "users")
@@ -52,7 +54,9 @@ public class User implements Auditable {
 
   private Long tokenExpiry;
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+  @ToString.Exclude
+  @JsonIgnore
   private List<JobApplication> applications = new ArrayList<>();
 
   @Embedded private Audit audit = new Audit();
