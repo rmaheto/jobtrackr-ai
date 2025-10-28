@@ -1,5 +1,6 @@
 package com.codemaniac.jobtrackrai.service;
 
+import com.codemaniac.jobtrackrai.entity.UserPreference;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,6 +45,7 @@ class ResumeServiceTest {
   @Mock private CurrentUserService currentUserService;
   @Mock private CloudFrontSigner cloudFrontSigner;
   @Mock private ResumeMapper resumeMapper;
+  @Mock private UserPreferenceService userPreferenceService;
 
   @InjectMocks private ResumeService resumeService;
 
@@ -71,13 +73,14 @@ class ResumeServiceTest {
             .user(mockUser)
             .build();
     when(currentUserService.getCurrentUser()).thenReturn(mockUser);
+    when(userPreferenceService.getUserPreferences()).thenReturn(UserPreference.defaultPreference());
     when(resumeRepository.findByUserAndOriginalName(mockUser, "resume.pdf"))
         .thenReturn(Optional.empty());
     when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
 
     final ResumeDto dto = new ResumeDto();
     dto.setId(10L);
-    when(resumeMapper.toDto(resume)).thenReturn(dto);
+    when(resumeMapper.toDto(resume, UserPreference.defaultPreference())).thenReturn(dto);
     when(cloudFrontSigner.createSignedUrl(anyString(), any(Instant.class)))
         .thenReturn("signed-url");
 
@@ -131,10 +134,11 @@ class ResumeServiceTest {
             .build();
 
     when(currentUserService.getCurrentUser()).thenReturn(mockUser);
+    when(userPreferenceService.getUserPreferences()).thenReturn(UserPreference.defaultPreference());
     when(resumeRepository.findByUser(mockUser)).thenReturn(List.of(resume));
     final ResumeDto dto = new ResumeDto();
     dto.setId(1L);
-    when(resumeMapper.toDto(resume)).thenReturn(dto);
+    when(resumeMapper.toDto(resume,UserPreference.defaultPreference())).thenReturn(dto);
     when(cloudFrontSigner.createSignedUrl(anyString(), any(Instant.class)))
         .thenReturn("signed-url");
 
