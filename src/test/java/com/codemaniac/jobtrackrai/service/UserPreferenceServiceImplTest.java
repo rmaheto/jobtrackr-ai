@@ -9,7 +9,6 @@ import com.codemaniac.jobtrackrai.dto.UserPreferenceDto;
 import com.codemaniac.jobtrackrai.entity.User;
 import com.codemaniac.jobtrackrai.entity.UserPreference;
 import com.codemaniac.jobtrackrai.exception.InternalServerException;
-import com.codemaniac.jobtrackrai.exception.NotFoundException;
 import com.codemaniac.jobtrackrai.mapper.UserPreferenceMapper;
 import com.codemaniac.jobtrackrai.repository.UserPreferenceRepository;
 import java.util.Optional;
@@ -61,14 +60,11 @@ class UserPreferenceServiceImplTest {
   }
 
   @Test
-  void getUserPreferences_Dto_whenNotFound_shouldThrowNotFoundException() {
+  void getUserPreferences_Dto_whenNotFound_shouldReturnDefaultUserPreference() {
     when(currentUserService.getCurrentUser()).thenReturn(user);
     when(preferenceRepository.findByUserId(user.getId())).thenReturn(Optional.empty());
 
-    assertThrows(NotFoundException.class, () -> service.getUserPreferences());
-
-    verify(preferenceRepository).findByUserId(user.getId());
-    verify(mapper, never()).toDto(any());
+    assertNotNull(service.getUserPreferences());
   }
 
   @Test
