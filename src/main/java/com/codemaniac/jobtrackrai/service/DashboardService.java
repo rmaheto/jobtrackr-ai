@@ -3,6 +3,7 @@ package com.codemaniac.jobtrackrai.service;
 import com.codemaniac.jobtrackrai.dto.DashboardResponse;
 import com.codemaniac.jobtrackrai.dto.RecentApplicationDto;
 import com.codemaniac.jobtrackrai.entity.JobApplication;
+import com.codemaniac.jobtrackrai.entity.UserPreference;
 import com.codemaniac.jobtrackrai.enums.Status;
 import com.codemaniac.jobtrackrai.factory.DateRepresentationFactory;
 import com.codemaniac.jobtrackrai.model.Audit;
@@ -25,6 +26,7 @@ public class DashboardService {
 
   public DashboardResponse getDashboardData() {
     final var user = currentUserService.getCurrentUser();
+    final UserPreference userPreference = userPreferenceService.getUserPreferences();
     final List<JobApplication> apps =
         repository.findByUserIdAndAudit_RecordStatusOrderByAudit_CreateTimestampDesc(
             user.getId(), Audit.RECORD_STATUS_ACTIVE);
@@ -40,7 +42,7 @@ public class DashboardService {
 
     final List<RecentApplicationDto> recent =
         apps.stream()
-            .limit(userPreferenceService.getUserPreferences().getItemsPerPage())
+            .limit(userPreference.getItemsPerPage())
             .map(
                 a ->
                     RecentApplicationDto.builder()
@@ -51,7 +53,8 @@ public class DashboardService {
                         .appliedDate(
                             a.getAppliedDate() != null
                                 ? dateFactory.create(
-                                    a.getAppliedDate().atStartOfDay().toInstant(ZoneOffset.UTC))
+                                    a.getAppliedDate().atStartOfDay().toInstant(ZoneOffset.UTC),
+                                    userPreference)
                                 : null)
                         .build())
             .toList();

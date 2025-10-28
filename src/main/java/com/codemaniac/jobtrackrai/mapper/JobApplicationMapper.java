@@ -3,6 +3,7 @@ package com.codemaniac.jobtrackrai.mapper;
 import com.codemaniac.jobtrackrai.dto.*;
 import com.codemaniac.jobtrackrai.entity.JobApplication;
 import com.codemaniac.jobtrackrai.entity.Resume;
+import com.codemaniac.jobtrackrai.entity.UserPreference;
 import com.codemaniac.jobtrackrai.factory.DateRepresentationFactory;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -16,7 +17,7 @@ public class JobApplicationMapper {
 
   private final DateRepresentationFactory dateFactory;
 
-  public JobApplicationDto toDto(final JobApplication entity) {
+  public JobApplicationDto toDto(final JobApplication entity, final UserPreference userPreference) {
     if (entity == null) return null;
 
     return JobApplicationDto.builder()
@@ -36,13 +37,15 @@ public class JobApplicationMapper {
         .appliedDate(
             entity.getAppliedDate() != null
                 ? dateFactory.create(
-                    entity.getAppliedDate().atStartOfDay().toInstant(ZoneOffset.UTC))
+                    entity.getAppliedDate().atStartOfDay().toInstant(ZoneOffset.UTC),
+                    userPreference)
                 : null)
         .linkedResumeId(entity.getResume() != null ? entity.getResume().getId() : null)
         .build();
   }
 
-  public JobApplicationSummaryDto toSummaryDto(final JobApplication entity) {
+  public JobApplicationSummaryDto toSummaryDto(
+      final JobApplication entity, final UserPreference userPreference) {
     if (entity == null) return null;
 
     return new JobApplicationSummaryDto(
@@ -51,7 +54,8 @@ public class JobApplicationMapper {
         entity.getRole(),
         entity.getStatus(),
         entity.getAppliedDate() != null
-            ? dateFactory.create(entity.getAppliedDate().atStartOfDay().toInstant(ZoneOffset.UTC))
+            ? dateFactory.create(
+                entity.getAppliedDate().atStartOfDay().toInstant(ZoneOffset.UTC), userPreference)
             : null);
   }
 
@@ -77,13 +81,21 @@ public class JobApplicationMapper {
     return job;
   }
 
-  public List<JobApplicationDto> toDtoList(final List<JobApplication> entities) {
+  public List<JobApplicationDto> toDtoList(
+      final List<JobApplication> entities, final UserPreference userPreference) {
     if (entities == null) return List.of();
-    return entities.stream().filter(Objects::nonNull).map(this::toDto).toList();
+    return entities.stream()
+        .filter(Objects::nonNull)
+        .map(jobApplication -> this.toDto(jobApplication, userPreference))
+        .toList();
   }
 
-  public List<JobApplicationSummaryDto> toSummaryList(final List<JobApplication> entities) {
+  public List<JobApplicationSummaryDto> toSummaryList(
+      final List<JobApplication> entities, final UserPreference userPreference) {
     if (entities == null) return List.of();
-    return entities.stream().filter(Objects::nonNull).map(this::toSummaryDto).toList();
+    return entities.stream()
+        .filter(Objects::nonNull)
+        .map(jobApplication -> this.toSummaryDto(jobApplication, userPreference))
+        .toList();
   }
 }

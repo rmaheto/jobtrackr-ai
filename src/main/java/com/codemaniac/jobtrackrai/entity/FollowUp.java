@@ -4,6 +4,7 @@ import com.codemaniac.jobtrackrai.enums.FollowUpType;
 import com.codemaniac.jobtrackrai.interceptor.AuditInterceptor;
 import com.codemaniac.jobtrackrai.model.Audit;
 import com.codemaniac.jobtrackrai.model.Auditable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -23,6 +24,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Getter
@@ -53,6 +55,8 @@ public class FollowUp implements Auditable {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "job_application_id", nullable = false)
+  @ToString.Exclude
+  @JsonIgnore
   private JobApplication jobApplication;
 
   @Embedded private Audit audit = new Audit();

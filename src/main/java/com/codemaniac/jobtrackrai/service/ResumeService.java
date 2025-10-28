@@ -4,6 +4,7 @@ import com.codemaniac.jobtrackrai.config.aws.CloudFrontSigner;
 import com.codemaniac.jobtrackrai.dto.ResumeDto;
 import com.codemaniac.jobtrackrai.entity.Resume;
 import com.codemaniac.jobtrackrai.entity.User;
+import com.codemaniac.jobtrackrai.entity.UserPreference;
 import com.codemaniac.jobtrackrai.enums.ResumeFileType;
 import com.codemaniac.jobtrackrai.exception.S3UploadException;
 import com.codemaniac.jobtrackrai.mapper.ResumeMapper;
@@ -29,6 +30,7 @@ public class ResumeService {
   private final ResumeRepository resumeRepository;
   private final S3Service s3Service;
   private final CurrentUserService currentUserService;
+  private final UserPreferenceService userPreferenceService;
   private final CloudFrontSigner cloudFrontSigner;
   private final ResumeMapper resumeMapper;
 
@@ -44,6 +46,7 @@ public class ResumeService {
     validateFile(file);
 
     final User user = currentUserService.getCurrentUser();
+    final UserPreference pref = userPreferenceService.getUserPreferences();
 
     final Resume resume =
         resumeRepository
@@ -69,7 +72,7 @@ public class ResumeService {
     resume.setS3Key(key);
     final Resume saved = resumeRepository.save(resume);
 
-    final ResumeDto dto = resumeMapper.toDto(saved);
+    final ResumeDto dto = resumeMapper.toDto(saved, pref);
     dto.setPreviewUrl(
         cloudFrontSigner.createSignedUrl(key, Instant.now().plus(15, ChronoUnit.MINUTES)));
     return dto;
@@ -77,11 +80,12 @@ public class ResumeService {
 
   public List<ResumeDto> listResumes() {
     final User user = currentUserService.getCurrentUser();
+    final UserPreference pref = userPreferenceService.getUserPreferences();
 
     return resumeRepository.findByUser(user).stream()
         .map(
             resume -> {
-              final ResumeDto dto = resumeMapper.toDto(resume);
+              final ResumeDto dto = resumeMapper.toDto(resume, pref);
               dto.setPreviewUrl(
                   cloudFrontSigner.createSignedUrl(
                       resume.getS3Key(), Instant.now().plus(15, ChronoUnit.MINUTES)));

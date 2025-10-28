@@ -2,10 +2,10 @@ package com.codemaniac.jobtrackrai.factory;
 
 import com.codemaniac.jobtrackrai.dto.DateRepresentation;
 import com.codemaniac.jobtrackrai.entity.UserPreference;
-import com.codemaniac.jobtrackrai.service.UserPreferenceService;
 import jakarta.annotation.Nonnull;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +17,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class DateRepresentationFactory {
 
-  private final UserPreferenceService userPreferenceService;
-
   private static final String MMDDYY = "MMM dd, yyyy";
 
   private static final Map<String, String> DATE_FORMAT_MAP =
@@ -28,13 +26,10 @@ public class DateRepresentationFactory {
           Map.entry("YYYY-MM-DD", "yyyy-MM-dd"),
           Map.entry("MMM DD, YYYY", MMDDYY));
 
-  public DateRepresentation create(final Instant instant) {
+  public DateRepresentation create(final Instant instant, final UserPreference pref) {
     if (instant == null) return null;
 
-    final UserPreference pref;
-    try {
-      pref = userPreferenceService.getUserPreferences();
-    } catch (final Exception e) {
+    if (pref == null) {
       log.warn("No user preferences found. Using defaults.");
       return createWithDefaults(instant);
     }
@@ -58,6 +53,28 @@ public class DateRepresentationFactory {
         computeRelative(instant));
   }
 
+  public LocalDate parseFrontendLocalDate(@Nonnull final String input) {
+    if (input.isBlank()) {
+      return LocalDate.now();
+    }
+
+    // Try ISO format first (the most common frontend date format)
+    try {
+      return LocalDate.parse(input, DateTimeFormatter.ISO_LOCAL_DATE);
+    } catch (final Exception e) {
+      // Try a few common alternatives for safety
+      for (final String pattern : List.of("MM/dd/yyyy", "dd/MM/yyyy", "yyyy-MM-dd", MMDDYY)) {
+        try {
+          return LocalDate.parse(input, DateTimeFormatter.ofPattern(pattern));
+        } catch (final Exception ignored) {
+          // ignored
+        }
+      }
+      log.warn("Could not parse frontend date '{}', defaulting to LocalDate.now()", input);
+      return LocalDate.now();
+    }
+  }
+
   private DateRepresentation createWithDefaults(@Nonnull final Instant instant) {
     final ZonedDateTime zoned = instant.atZone(ZoneId.systemDefault());
     final DateTimeFormatter dateTime = DateTimeFormatter.ofPattern("MMM dd, yyyy hh:mm a");
@@ -71,7 +88,7 @@ public class DateRepresentationFactory {
         computeRelative(instant));
   }
 
-  private ZoneId resolveZone(String tz) {
+  private ZoneId resolveZone(final String tz) {
     if (tz == null || tz.isBlank()) return ZoneId.systemDefault();
     try {
       if (tz.contains("(")) {
