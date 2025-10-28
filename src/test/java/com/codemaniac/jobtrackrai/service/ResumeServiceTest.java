@@ -1,6 +1,5 @@
 package com.codemaniac.jobtrackrai.service;
 
-import com.codemaniac.jobtrackrai.entity.UserPreference;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -16,6 +15,7 @@ import com.codemaniac.jobtrackrai.config.aws.CloudFrontSigner;
 import com.codemaniac.jobtrackrai.dto.ResumeDto;
 import com.codemaniac.jobtrackrai.entity.Resume;
 import com.codemaniac.jobtrackrai.entity.User;
+import com.codemaniac.jobtrackrai.entity.UserPreference;
 import com.codemaniac.jobtrackrai.enums.ResumeFileType;
 import com.codemaniac.jobtrackrai.exception.S3UploadException;
 import com.codemaniac.jobtrackrai.mapper.ResumeMapper;
@@ -138,7 +138,7 @@ class ResumeServiceTest {
     when(resumeRepository.findByUser(mockUser)).thenReturn(List.of(resume));
     final ResumeDto dto = new ResumeDto();
     dto.setId(1L);
-    when(resumeMapper.toDto(resume,UserPreference.defaultPreference())).thenReturn(dto);
+    when(resumeMapper.toDto(resume, UserPreference.defaultPreference())).thenReturn(dto);
     when(cloudFrontSigner.createSignedUrl(anyString(), any(Instant.class)))
         .thenReturn("signed-url");
 
