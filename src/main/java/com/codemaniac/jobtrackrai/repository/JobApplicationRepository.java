@@ -2,6 +2,7 @@ package com.codemaniac.jobtrackrai.repository;
 
 import com.codemaniac.jobtrackrai.entity.JobApplication;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -16,4 +17,8 @@ public interface JobApplicationRepository
       Long id, String status);
 
   List<JobApplication> findLiteByUserIdAndAudit_RecordStatus(Long userId, String recordStatus);
+
+  Optional<JobApplication> findBySnapshotId(String snapshotId);
+
+  Optional<JobApplication> findByJobLink(String jobLink);
 }

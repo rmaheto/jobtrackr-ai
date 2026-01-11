@@ -1,5 +1,6 @@
 package com.codemaniac.jobtrackrai.service;
 
+import com.codemaniac.jobtrackrai.dto.CreateJobApplicationFromIndeedRequest;
 import com.codemaniac.jobtrackrai.dto.JobApplicationDto;
 import com.codemaniac.jobtrackrai.dto.JobApplicationRequest;
 import com.codemaniac.jobtrackrai.dto.JobApplicationSearchRequest;
@@ -17,6 +18,8 @@ import com.codemaniac.jobtrackrai.model.Audit;
 import com.codemaniac.jobtrackrai.repository.JobApplicationRepository;
 import com.codemaniac.jobtrackrai.repository.JobApplicationSpecifications;
 import com.codemaniac.jobtrackrai.repository.ResumeRepository;
+import com.codemaniac.jobtrackrai.service.brightdata.BrightDataService;
+import com.codemaniac.jobtrackrai.util.IndeedJobUrlValidator;
 import jakarta.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -49,10 +52,12 @@ public class JobApplicationServiceImpl implements JobApplicationService {
   private final JobScraperService jobScraperService;
   private final JobApplicationAiService jobApplicationAiService;
   private final UserPreferenceService userPreferenceService;
+  private final BrightDataService brightDataService;
   private final JobApplicationMapper jobApplicationMapper;
   private final DateRepresentationFactory dateRepresentationFactory;
 
   private static final String JOB_NOT_FOUND = "Job application not found id={}";
+  private static final String INVALID_RESUME_ID = "Invalid resume id id={}";
 
   @Override
   public JobApplicationDto create(final JobApplicationRequest request) {
@@ -73,10 +78,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                     resumeRepository
                         .findById(resumeId)
                         .filter(r -> r.getUser().equals(user))
-                        .orElseThrow(
-                            () ->
-                                new IllegalArgumentException(
-                                    "Invalid resume ID or not owned by user")))
+                        .orElseThrow(() -> new IllegalArgumentException(INVALID_RESUME_ID)))
             .orElse(null);
 
     final JobApplication entity = jobApplicationMapper.toEntity(request, resume);
@@ -85,7 +87,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             .getAppliedDate()
             .map(dateRepresentationFactory::parseFrontendLocalDate)
             .orElse(LocalDate.now()));
-    entity.setAppliedDate(LocalDate.now());
+
     entity.setUser(user);
     final JobApplication saved = repository.save(entity);
 
@@ -94,6 +96,35 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     }
 
     return jobApplicationMapper.toDto(saved, pref);
+  }
+
+  @Transactional
+  public JobApplicationDto createFromIndeed(final CreateJobApplicationFromIndeedRequest request) {
+    final User user = currentUserService.getCurrentUser();
+    final UserPreference pref = userPreferenceService.getUserPreferences();
+
+    final String jobUrl = request.getJobLink();
+
+    if (!IndeedJobUrlValidator.isValid(jobUrl)) {
+      throw new IllegalArgumentException("Invalid Indeed job URL");
+    }
+
+    final Resume resume =
+        resumeRepository
+            .findById(request.getLinkedResumeId())
+            .filter(r -> r.getUser().equals(user))
+            .orElseThrow(() -> new IllegalArgumentException(INVALID_RESUME_ID));
+
+    final JobApplication job = jobApplicationMapper.toEntity(request, resume);
+    job.setAppliedDate(dateRepresentationFactory.parseFrontendLocalDate(request.getAppliedDate()));
+
+    repository.save(job);
+
+    final String snapshotId = brightDataService.createSnapshot(jobUrl).getSnapshotId();
+
+    job.setSnapshotId(snapshotId);
+
+    return jobApplicationMapper.toDto(job, pref);
   }
 
   @Override
