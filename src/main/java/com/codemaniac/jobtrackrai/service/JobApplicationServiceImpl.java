@@ -81,15 +81,15 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                         .orElseThrow(() -> new IllegalArgumentException(INVALID_RESUME_ID)))
             .orElse(null);
 
-    final JobApplication entity = jobApplicationMapper.toEntity(request, resume);
-    entity.setAppliedDate(
+    final JobApplication jobApplication = jobApplicationMapper.toEntity(request, resume);
+    jobApplication.setAppliedDate(
         request
             .getAppliedDate()
             .map(dateRepresentationFactory::parseFrontendLocalDate)
             .orElse(LocalDate.now()));
 
-    entity.setUser(user);
-    final JobApplication saved = repository.save(entity);
+    jobApplication.setUser(user);
+    final JobApplication saved = repository.save(jobApplication);
 
     if (log.isDebugEnabled()) {
       log.debug("Job application persisted with id={} for user={}", saved.getId(), user.getEmail());
@@ -115,16 +115,18 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             .filter(r -> r.getUser().equals(user))
             .orElseThrow(() -> new IllegalArgumentException(INVALID_RESUME_ID));
 
-    final JobApplication job = jobApplicationMapper.toEntity(request, resume);
-    job.setAppliedDate(dateRepresentationFactory.parseFrontendLocalDate(request.getAppliedDate()));
+    final JobApplication jobApplication = jobApplicationMapper.toEntity(request, resume);
+    jobApplication.setUser(user);
+    jobApplication.setAppliedDate(
+        dateRepresentationFactory.parseFrontendLocalDate(request.getAppliedDate()));
 
-    repository.save(job);
+    repository.save(jobApplication);
 
     final String snapshotId = brightDataService.createSnapshot(jobUrl).getSnapshotId();
 
-    job.setSnapshotId(snapshotId);
+    jobApplication.setSnapshotId(snapshotId);
 
-    return jobApplicationMapper.toDto(job, pref);
+    return jobApplicationMapper.toDto(jobApplication, pref);
   }
 
   @Override
