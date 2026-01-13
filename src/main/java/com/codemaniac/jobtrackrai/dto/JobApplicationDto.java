@@ -25,4 +25,5 @@ public class JobApplicationDto {
   private String contactPersonEmail;
   private String notes;
   private Long linkedResumeId;
+  private String enrichmentStatus;
 }

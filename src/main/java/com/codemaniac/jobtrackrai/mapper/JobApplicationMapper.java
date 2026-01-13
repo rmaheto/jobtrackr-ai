@@ -19,32 +19,42 @@ public class JobApplicationMapper {
 
   private final DateRepresentationFactory dateFactory;
 
-  public JobApplicationDto toDto(final JobApplication entity, final UserPreference userPreference) {
+  public JobApplicationDto toDto(
+      final JobApplication entity,
+      final UserPreference userPreference
+  ) {
     if (entity == null) return null;
+
+    final EnrichmentStatus enrichmentStatus = entity.getEnrichmentStatus();
 
     return JobApplicationDto.builder()
         .id(entity.getId())
-        .company(entity.getCompany())
-        .role(entity.getRole())
-        .location(entity.getLocation())
-        .description(entity.getDescription())
-        .notes(entity.getNotes())
-        .jobType(entity.getJobType())
-        .status(entity.getStatus().name())
-        .salary(entity.getSalary())
-        .skills(entity.getSkills())
+        .company(normalizeIfPending(entity.getCompany(), enrichmentStatus))
+        .role(normalizeIfPending(entity.getRole(), enrichmentStatus))
+        .location(normalizeIfPending(entity.getLocation(), enrichmentStatus))
+        .description(normalizeIfPending(entity.getDescription(), enrichmentStatus))
+        .notes(entity.getNotes()) // notes are user-owned; never suppressed
+        .jobType(normalizeIfPending(entity.getJobType(), enrichmentStatus))
+        .salary(normalizeIfPending(entity.getSalary(), enrichmentStatus))
+        .skills(normalizeIfPending(entity.getSkills(), enrichmentStatus))
         .contactPersonName(entity.getContactPersonName())
         .contactPersonEmail(entity.getContactPersonEmail())
         .jobLink(entity.getJobLink())
+        .status(entity.getStatus().name())
+        .enrichmentStatus(enrichmentStatus.name())
         .appliedDate(
             entity.getAppliedDate() != null
                 ? dateFactory.create(
-                    entity.getAppliedDate().atStartOfDay().toInstant(ZoneOffset.UTC),
-                    userPreference)
+                entity.getAppliedDate()
+                    .atStartOfDay()
+                    .toInstant(ZoneOffset.UTC),
+                userPreference)
                 : null)
-        .linkedResumeId(entity.getResume() != null ? entity.getResume().getId() : null)
+        .linkedResumeId(
+            entity.getResume() != null ? entity.getResume().getId() : null)
         .build();
   }
+
 
   public JobApplicationSummaryDto toSummaryDto(
       final JobApplication entity, final UserPreference userPreference) {
@@ -124,4 +134,16 @@ public class JobApplicationMapper {
         .map(jobApplication -> this.toSummaryDto(jobApplication, userPreference))
         .toList();
   }
+
+  private String normalizeIfPending(
+      final String value,
+      final EnrichmentStatus enrichmentStatus
+  ) {
+    if (enrichmentStatus == EnrichmentStatus.PENDING_ENRICHMENT &&
+        (value == null || value.isBlank())) {
+      return null;
+    }
+    return value;
+  }
+
 }

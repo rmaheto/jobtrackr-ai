@@ -9,6 +9,7 @@ import com.codemaniac.jobtrackrai.entity.JobApplication;
 import com.codemaniac.jobtrackrai.entity.Resume;
 import com.codemaniac.jobtrackrai.entity.User;
 import com.codemaniac.jobtrackrai.entity.UserPreference;
+import com.codemaniac.jobtrackrai.enums.EnrichmentStatus;
 import com.codemaniac.jobtrackrai.enums.Status;
 import com.codemaniac.jobtrackrai.exception.BadRequestException;
 import com.codemaniac.jobtrackrai.exception.ExcelExportException;
@@ -97,6 +98,10 @@ public class JobApplicationServiceImpl implements JobApplicationService {
       log.debug("Job application persisted with id={} for user={}", saved.getId(), user.getEmail());
     }
     jobEnrichmentOrchestrator.maybeEnrich(saved, request);
+
+    if(saved.getEnrichmentStatus() != EnrichmentStatus.PENDING_ENRICHMENT) {
+      saved.setEnrichmentStatus(EnrichmentStatus.NOT_REQUESTED);
+    }
 
     return jobApplicationMapper.toDto(saved, pref);
   }
