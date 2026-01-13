@@ -1,5 +1,6 @@
 package com.codemaniac.jobtrackrai.dto;
 
+import com.codemaniac.jobtrackrai.enums.JobSource;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -23,4 +24,6 @@ public class CreateJobApplicationFromIndeedRequest {
   private String notes;
   private String contactPersonName;
   private String contactPersonEmail;
+  private Boolean scrapeFromUrl;
+  private JobSource jobSource;
 }

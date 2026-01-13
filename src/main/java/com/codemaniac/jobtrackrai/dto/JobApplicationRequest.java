@@ -1,5 +1,6 @@
 package com.codemaniac.jobtrackrai.dto;
 
+import com.codemaniac.jobtrackrai.enums.JobSource;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,4 +26,6 @@ public class JobApplicationRequest {
   private Optional<String> notes = Optional.empty();
   private Optional<Long> linkedResumeId = Optional.empty();
   private Optional<String> appliedDate = Optional.empty();
+  private Optional<Boolean> scrapeFromUrl = Optional.empty();
+  private Optional<JobSource> jobSource= Optional.empty();
 }
