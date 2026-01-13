@@ -16,16 +16,11 @@ public class JobScrapingStrategyRegistry {
   public JobScrapingStrategyRegistry(final List<JobScrapingStrategy> strategies) {
     this.strategies =
         strategies.stream()
-            .collect(Collectors.toMap(
-                JobScrapingStrategy::supports,
-                Function.identity()
-            ));
+            .collect(Collectors.toMap(JobScrapingStrategy::supports, Function.identity()));
   }
 
   public JobScrapingStrategy get(final JobSource source) {
     return Optional.ofNullable(strategies.get(source))
-        .orElseThrow(() ->
-            new IllegalArgumentException("No scraper for source: " + source));
+        .orElseThrow(() -> new IllegalArgumentException("No scraper for source: " + source));
   }
 }
-

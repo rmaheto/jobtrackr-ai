@@ -8,4 +8,3 @@ public interface JobScrapingStrategy {
 
   void triggerScrape(String jobUrl, Long jobApplicationId);
 }
-

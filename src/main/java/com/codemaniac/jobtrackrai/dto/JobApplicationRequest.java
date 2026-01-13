@@ -27,5 +27,5 @@ public class JobApplicationRequest {
   private Optional<Long> linkedResumeId = Optional.empty();
   private Optional<String> appliedDate = Optional.empty();
   private Optional<Boolean> scrapeFromUrl = Optional.empty();
-  private Optional<JobSource> jobSource= Optional.empty();
+  private Optional<JobSource> jobSource = Optional.empty();
 }

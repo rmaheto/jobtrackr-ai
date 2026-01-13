@@ -28,4 +28,3 @@ public final class JobSourceDetector {
     return JobSource.UNKNOWN;
   }
 }
-

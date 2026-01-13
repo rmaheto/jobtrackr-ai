@@ -1,10 +1,9 @@
 package com.codemaniac.jobtrackrai.enrichment;
 
-
-
-import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class JobUrlSanitizerTest {

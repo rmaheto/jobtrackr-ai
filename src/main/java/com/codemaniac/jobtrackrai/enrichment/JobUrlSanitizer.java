@@ -27,10 +27,7 @@ public final class JobUrlSanitizer {
     };
   }
 
-  /**
-   * Normalizes all Indeed URLs to:
-   * https://www.indeed.com/viewjob?jk={jobKey}
-   */
+  /** Normalizes all Indeed URLs to: https://www.indeed.com/viewjob?jk={jobKey} */
   private static Optional<String> sanitizeIndeed(final String rawUrl) {
     try {
       final URI uri = URI.create(rawUrl);
@@ -59,7 +56,6 @@ public final class JobUrlSanitizer {
         }
       }
 
-
       if (jobKey == null || jobKey.isBlank()) {
         return Optional.empty();
       }
@@ -72,4 +68,3 @@ public final class JobUrlSanitizer {
     }
   }
 }
-

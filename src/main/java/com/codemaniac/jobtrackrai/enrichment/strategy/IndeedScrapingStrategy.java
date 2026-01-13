@@ -21,4 +21,3 @@ public class IndeedScrapingStrategy implements JobScrapingStrategy {
     brightDataService.createSnapshot(jobUrl);
   }
 }
-

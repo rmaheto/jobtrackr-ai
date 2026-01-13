@@ -101,7 +101,6 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     return jobApplicationMapper.toDto(saved, pref);
   }
 
-
   @Transactional
   public JobApplicationDto createFromIndeed(final CreateJobApplicationFromIndeedRequest request) {
     final User user = currentUserService.getCurrentUser();
