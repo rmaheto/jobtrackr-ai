@@ -1,5 +1,6 @@
 package com.codemaniac.jobtrackrai.controller;
 
+import com.codemaniac.jobtrackrai.dto.CreateJobApplicationFromIndeedRequest;
 import com.codemaniac.jobtrackrai.dto.JobApplicationDto;
 import com.codemaniac.jobtrackrai.dto.JobApplicationRequest;
 import com.codemaniac.jobtrackrai.dto.JobApplicationSearchRequest;
@@ -40,6 +41,18 @@ public class JobApplicationController {
       @RequestBody final JobApplicationRequest request) {
 
     final JobApplicationDto jobApplicationDto = jobApplicationService.create(request);
+
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(
+            ApiResponse.of(
+                HttpStatus.CREATED.name(), "Job application created", jobApplicationDto));
+  }
+
+  @PostMapping("/from-indeed")
+  public ResponseEntity<ApiResponse<JobApplicationDto>> createJobApplicationFromIndeed(
+      @RequestBody final CreateJobApplicationFromIndeedRequest request) {
+
+    final JobApplicationDto jobApplicationDto = jobApplicationService.createFromIndeed(request);
 
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(

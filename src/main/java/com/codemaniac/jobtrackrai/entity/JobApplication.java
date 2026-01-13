@@ -1,5 +1,6 @@
 package com.codemaniac.jobtrackrai.entity;
 
+import com.codemaniac.jobtrackrai.enums.EnrichmentStatus;
 import com.codemaniac.jobtrackrai.enums.Status;
 import com.codemaniac.jobtrackrai.interceptor.AuditInterceptor;
 import com.codemaniac.jobtrackrai.model.Audit;
@@ -18,6 +19,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,6 +42,8 @@ public class JobApplication implements Auditable {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Version private Long version;
+
   private String company;
   private String role;
   private String location;
@@ -53,6 +57,9 @@ public class JobApplication implements Auditable {
 
   @Enumerated(EnumType.STRING)
   private Status status;
+
+  @Enumerated(EnumType.STRING)
+  private EnrichmentStatus enrichmentStatus;
 
   private LocalDate appliedDate;
   private String contactPersonName;
@@ -72,6 +79,8 @@ public class JobApplication implements Auditable {
   @ToString.Exclude
   @JsonIgnore
   private User user;
+
+  private String snapshotId;
 
   @Embedded private Audit audit = new Audit();
 }

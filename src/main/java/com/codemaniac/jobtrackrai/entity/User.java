@@ -37,7 +37,6 @@ public class User implements Auditable {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  // Unique ID from OAuth2 provider (e.g. Google sub claim)
   @Column(unique = true, nullable = false)
   private String externalId;
 

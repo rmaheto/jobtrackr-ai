@@ -123,4 +123,20 @@ google:
     scope: https://www.googleapis.com/auth/calendar
     app-name: JobTrackr Pro
 
+stripe:
+  apiKey: ${STRIPE_API.key}
+  webhook-secret: ${WEBHOOK_SECRET.key}
+  success-url: https://app.jobtrackrpro.com/account?checkout=success
+  cancel-url: https://app.jobtrackrpro.com/account?checkout=cancelled
+
+brightdata:
+  base-url: https://api.brightdata.com
+  scrape-url: /datasets/v3/trigger
+  download-snapshot-data-url: /datasets/v3/snapshot/
+  webhook-callback-url: https://circularly-capillaceous-lieselotte.ngrok-free.dev/webhooks/brightdata
+  webhook-secret: ${BRIGHTDATA_WEBHOOK_SECRET}
+  dataset-id: gd_l4dx9j9sscpvs7no2
+  api-key: ${BRIGHT_DATA_API_KEY}
+
+
 
