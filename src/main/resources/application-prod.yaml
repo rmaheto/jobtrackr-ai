@@ -26,4 +26,7 @@ app:
   frontend:
     url: https://jobtrackrpro.com
 
+brightdata:
+  webhook-callback-url: https://api.jobtrackrpro.com/webhooks/brightdata
+
 
