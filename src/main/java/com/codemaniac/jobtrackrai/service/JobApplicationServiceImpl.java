@@ -99,7 +99,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     }
     jobEnrichmentOrchestrator.maybeEnrich(saved, request);
 
-    if(saved.getEnrichmentStatus() != EnrichmentStatus.PENDING_ENRICHMENT) {
+    if (saved.getEnrichmentStatus() != EnrichmentStatus.PENDING_ENRICHMENT) {
       saved.setEnrichmentStatus(EnrichmentStatus.NOT_REQUESTED);
     }
 

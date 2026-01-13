@@ -19,10 +19,7 @@ public class JobApplicationMapper {
 
   private final DateRepresentationFactory dateFactory;
 
-  public JobApplicationDto toDto(
-      final JobApplication entity,
-      final UserPreference userPreference
-  ) {
+  public JobApplicationDto toDto(final JobApplication entity, final UserPreference userPreference) {
     if (entity == null) return null;
 
     final EnrichmentStatus enrichmentStatus = entity.getEnrichmentStatus();
@@ -45,16 +42,12 @@ public class JobApplicationMapper {
         .appliedDate(
             entity.getAppliedDate() != null
                 ? dateFactory.create(
-                entity.getAppliedDate()
-                    .atStartOfDay()
-                    .toInstant(ZoneOffset.UTC),
-                userPreference)
+                    entity.getAppliedDate().atStartOfDay().toInstant(ZoneOffset.UTC),
+                    userPreference)
                 : null)
-        .linkedResumeId(
-            entity.getResume() != null ? entity.getResume().getId() : null)
+        .linkedResumeId(entity.getResume() != null ? entity.getResume().getId() : null)
         .build();
   }
-
 
   public JobApplicationSummaryDto toSummaryDto(
       final JobApplication entity, final UserPreference userPreference) {
@@ -135,15 +128,11 @@ public class JobApplicationMapper {
         .toList();
   }
 
-  private String normalizeIfPending(
-      final String value,
-      final EnrichmentStatus enrichmentStatus
-  ) {
-    if (enrichmentStatus == EnrichmentStatus.PENDING_ENRICHMENT &&
-        (value == null || value.isBlank())) {
+  private String normalizeIfPending(final String value, final EnrichmentStatus enrichmentStatus) {
+    if (enrichmentStatus == EnrichmentStatus.PENDING_ENRICHMENT
+        && (value == null || value.isBlank())) {
       return null;
     }
     return value;
   }
-
 }
