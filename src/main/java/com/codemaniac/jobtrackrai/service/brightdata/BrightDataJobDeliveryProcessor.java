@@ -1,6 +1,6 @@
 package com.codemaniac.jobtrackrai.service.brightdata;
 
-import com.codemaniac.jobtrackrai.dto.IndeedJobSnapshotResponse;
+import com.codemaniac.jobtrackrai.dto.brightdata.IndeedJobSnapshotResponse;
 import com.codemaniac.jobtrackrai.entity.JobApplication;
 import com.codemaniac.jobtrackrai.enums.EnrichmentStatus;
 import com.codemaniac.jobtrackrai.mapper.JobSnapshotToJobApplicationMapper;

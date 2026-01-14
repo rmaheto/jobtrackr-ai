@@ -1,4 +1,4 @@
-package com.codemaniac.jobtrackrai.dto;
+package com.codemaniac.jobtrackrai.dto.brightdata;
 
 import java.util.List;
 import lombok.AllArgsConstructor;

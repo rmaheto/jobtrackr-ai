@@ -1,6 +1,6 @@
 package com.codemaniac.jobtrackrai.mapper;
 
-import com.codemaniac.jobtrackrai.dto.IndeedJobSnapshotResponse;
+import com.codemaniac.jobtrackrai.dto.brightdata.IndeedJobSnapshotResponse;
 import com.codemaniac.jobtrackrai.entity.JobApplication;
 import org.apache.commons.lang3.StringUtils;
 

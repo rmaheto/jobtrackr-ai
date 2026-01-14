@@ -135,8 +135,13 @@ brightdata:
   download-snapshot-data-url: /datasets/v3/snapshot/
   webhook-callback-url: https://circularly-capillaceous-lieselotte.ngrok-free.dev/webhooks/brightdata
   webhook-secret: ${BRIGHTDATA_WEBHOOK_SECRET}
-  dataset-id: gd_l4dx9j9sscpvs7no2
   api-key: ${BRIGHT_DATA_API_KEY}
+  indeed:
+    dataset-id: gd_l4dx9j9sscpvs7no2
+  linkedin:
+    dataset-id: gd_l1viktl72bvl7bjuj0
+  glassdoor:
+    dataset-id: gd_l7j0bx501ockwldaqf
 
 
 

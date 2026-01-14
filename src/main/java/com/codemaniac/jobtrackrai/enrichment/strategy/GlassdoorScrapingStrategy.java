@@ -1,24 +1,24 @@
 package com.codemaniac.jobtrackrai.enrichment.strategy;
 
 import com.codemaniac.jobtrackrai.enums.JobSource;
-import com.codemaniac.jobtrackrai.service.brightdata.IndeedSnapshotService;
+import com.codemaniac.jobtrackrai.service.brightdata.GlassdoorSnapshotService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class IndeedScrapingStrategy implements JobScrapingStrategy {
+public class GlassdoorScrapingStrategy implements JobScrapingStrategy {
 
-  private final IndeedSnapshotService indeedSnapshotService;
+  private final GlassdoorSnapshotService glassdoorSnapshotService;
 
   @Override
   public JobSource supports() {
-    return JobSource.INDEED;
+    return JobSource.GLASSDOOR;
   }
 
   @Override
   public String triggerScrape(
       final String jobUrl, final Long jobApplicationId, final JobSource jobSource) {
-    return indeedSnapshotService.requestSnapshot(jobUrl);
+    return glassdoorSnapshotService.requestSnapshot(jobUrl);
   }
 }

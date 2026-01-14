@@ -1,6 +1,6 @@
 package com.codemaniac.jobtrackrai.controller;
 
-import com.codemaniac.jobtrackrai.dto.IndeedJobSnapshotResponse;
+import com.codemaniac.jobtrackrai.dto.brightdata.IndeedJobSnapshotResponse;
 import com.codemaniac.jobtrackrai.service.brightdata.BrightDataJobDeliveryProcessor;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

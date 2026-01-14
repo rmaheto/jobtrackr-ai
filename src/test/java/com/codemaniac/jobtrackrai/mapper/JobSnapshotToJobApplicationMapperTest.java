@@ -2,7 +2,7 @@ package com.codemaniac.jobtrackrai.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.codemaniac.jobtrackrai.dto.IndeedJobSnapshotResponse;
+import com.codemaniac.jobtrackrai.dto.brightdata.IndeedJobSnapshotResponse;
 import com.codemaniac.jobtrackrai.entity.JobApplication;
 import org.junit.jupiter.api.Test;
 

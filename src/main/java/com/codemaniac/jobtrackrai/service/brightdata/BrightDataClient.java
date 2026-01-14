@@ -1,8 +1,9 @@
 package com.codemaniac.jobtrackrai.service.brightdata;
 
-import com.codemaniac.jobtrackrai.dto.BrightDataSnapshotRequest;
-import com.codemaniac.jobtrackrai.dto.BrightDataSnapshotResponse;
-import com.codemaniac.jobtrackrai.dto.IndeedJobSnapshotResponse;
+import com.codemaniac.jobtrackrai.dto.brightdata.BrightDataSnapshotRequest;
+import com.codemaniac.jobtrackrai.dto.brightdata.BrightDataSnapshotResponse;
+import com.codemaniac.jobtrackrai.dto.brightdata.IndeedJobSnapshotResponse;
+import com.codemaniac.jobtrackrai.enums.BrightDataSource;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,9 +34,6 @@ public class BrightDataClient {
   @Value("${brightdata.webhook-callback-url}")
   private String webhookCallbackUrl;
 
-  @Value("${brightdata.dataset-id}")
-  private String datasetId;
-
   @Value("${brightdata.api-key}")
   private String apiKey;
 
@@ -46,7 +44,8 @@ public class BrightDataClient {
 
   private final RetryTemplate retryTemplate;
 
-  public String requestSnapshotId(final String jobUrl) {
+  public String requestSnapshotId(
+      final String datasetId, final String jobUrl, final BrightDataSource source) {
 
     final String endpoint =
         baseUrl
@@ -70,7 +69,8 @@ public class BrightDataClient {
     return retryTemplate.execute(
         context -> {
           log.debug(
-              "Requesting Bright Data snapshot (attempt #{}) for url={}",
+              "Requesting {} snapshot (attempt #{}) for url={}",
+              source,
               context.getRetryCount() + 1,
               jobUrl);
 
@@ -85,7 +85,8 @@ public class BrightDataClient {
         },
         context -> {
           log.error(
-              "Bright Data snapshot request failed after {} attempts for url={}",
+              "{} snapshot request failed after {} attempts for url={}",
+              source,
               context.getRetryCount(),
               jobUrl);
 

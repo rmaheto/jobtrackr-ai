@@ -6,5 +6,5 @@ public interface JobScrapingStrategy {
 
   JobSource supports();
 
-  void triggerScrape(String jobUrl, Long jobApplicationId);
+  String triggerScrape(String jobUrl, Long jobApplicationId, final JobSource jobSource);
 }
