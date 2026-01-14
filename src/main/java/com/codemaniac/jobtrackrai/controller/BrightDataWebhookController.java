@@ -1,8 +1,7 @@
 package com.codemaniac.jobtrackrai.controller;
 
-import com.codemaniac.jobtrackrai.dto.brightdata.IndeedJobSnapshotResponse;
 import com.codemaniac.jobtrackrai.service.brightdata.BrightDataJobDeliveryProcessor;
-import java.util.List;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +27,7 @@ public class BrightDataWebhookController {
   /** Called by Bright Data when snapshot is ready */
   @PostMapping
   public ResponseEntity<Void> handleSnapshotReady(
-      @RequestBody final List<IndeedJobSnapshotResponse> payloads,
+      @RequestBody final JsonNode payload,
       @RequestHeader(value = "Authorization", required = false) final String authorization) {
 
     if (!expectedWebhookSecret.equals(authorization)) {
@@ -36,14 +35,14 @@ public class BrightDataWebhookController {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    if (payloads == null || payloads.isEmpty()) {
+    if (payload == null || payload.isEmpty()) {
       log.info("Received empty Bright Data webhook payload");
       return ResponseEntity.ok().build();
     }
 
-    log.info("Received Bright Data delivery webhook with {} job(s)", payloads.size());
+    log.info("Received Bright Data delivery webhook with {} job(s)", payload.size());
 
-    jobDeliveryProcessor.handleDeliveredJobs(payloads);
+    jobDeliveryProcessor.process(payload);
 
     return ResponseEntity.ok().build();
   }
