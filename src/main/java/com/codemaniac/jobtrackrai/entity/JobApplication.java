@@ -1,6 +1,7 @@
 package com.codemaniac.jobtrackrai.entity;
 
 import com.codemaniac.jobtrackrai.enums.EnrichmentStatus;
+import com.codemaniac.jobtrackrai.enums.JobSource;
 import com.codemaniac.jobtrackrai.enums.Status;
 import com.codemaniac.jobtrackrai.interceptor.AuditInterceptor;
 import com.codemaniac.jobtrackrai.model.Audit;
@@ -81,6 +82,9 @@ public class JobApplication implements Auditable {
   private User user;
 
   private String snapshotId;
+
+  @Enumerated(EnumType.STRING)
+  private JobSource source;
 
   @Embedded private Audit audit = new Audit();
 }

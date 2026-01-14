@@ -1,6 +1,5 @@
 package com.codemaniac.jobtrackrai.controller;
 
-import com.codemaniac.jobtrackrai.dto.CreateJobApplicationFromIndeedRequest;
 import com.codemaniac.jobtrackrai.dto.JobApplicationDto;
 import com.codemaniac.jobtrackrai.dto.JobApplicationRequest;
 import com.codemaniac.jobtrackrai.dto.JobApplicationSearchRequest;
@@ -48,18 +47,6 @@ public class JobApplicationController {
                 HttpStatus.CREATED.name(), "Job application created", jobApplicationDto));
   }
 
-  @PostMapping("/from-indeed")
-  public ResponseEntity<ApiResponse<JobApplicationDto>> createJobApplicationFromIndeed(
-      @RequestBody final CreateJobApplicationFromIndeedRequest request) {
-
-    final JobApplicationDto jobApplicationDto = jobApplicationService.createFromIndeed(request);
-
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(
-            ApiResponse.of(
-                HttpStatus.CREATED.name(), "Job application created", jobApplicationDto));
-  }
-
   @GetMapping("/{id}")
   public ResponseEntity<ApiResponse<JobApplicationDto>> getJobApplication(
       @PathVariable final Long id) {
@@ -67,18 +54,6 @@ public class JobApplicationController {
 
     return ResponseEntity.status(HttpStatus.OK)
         .body(ApiResponse.of(HttpStatus.OK.name(), "Job application found", jobApplicationDto));
-  }
-
-  @PostMapping("/ai")
-  public ResponseEntity<ApiResponse<JobApplicationRequest>> getJobApplicationRequestFromLink(
-      @RequestParam final String jobUrl) {
-
-    final JobApplicationRequest request = jobApplicationService.createFromLink(jobUrl);
-
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(
-            ApiResponse.of(
-                HttpStatus.CREATED.name(), "Job application created from link", request));
   }
 
   @PostMapping("/search")

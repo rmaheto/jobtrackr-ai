@@ -1,6 +1,5 @@
 package com.codemaniac.jobtrackrai.service;
 
-import com.codemaniac.jobtrackrai.dto.CreateJobApplicationFromIndeedRequest;
 import com.codemaniac.jobtrackrai.dto.JobApplicationDto;
 import com.codemaniac.jobtrackrai.dto.JobApplicationRequest;
 import com.codemaniac.jobtrackrai.dto.JobApplicationSearchRequest;
@@ -20,8 +19,6 @@ import com.codemaniac.jobtrackrai.model.Audit;
 import com.codemaniac.jobtrackrai.repository.JobApplicationRepository;
 import com.codemaniac.jobtrackrai.repository.JobApplicationSpecifications;
 import com.codemaniac.jobtrackrai.repository.ResumeRepository;
-import com.codemaniac.jobtrackrai.service.brightdata.BrightDataService;
-import com.codemaniac.jobtrackrai.util.IndeedJobUrlValidator;
 import jakarta.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,10 +48,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
   private final JobApplicationRepository repository;
   private final ResumeRepository resumeRepository;
   private final CurrentUserService currentUserService;
-  private final JobScraperService jobScraperService;
-  private final JobApplicationAiService jobApplicationAiService;
   private final UserPreferenceService userPreferenceService;
-  private final BrightDataService brightDataService;
   private final JobApplicationMapper jobApplicationMapper;
   private final DateRepresentationFactory dateRepresentationFactory;
   private final JobEnrichmentOrchestrator jobEnrichmentOrchestrator;
@@ -104,52 +98,6 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     }
 
     return jobApplicationMapper.toDto(saved, pref);
-  }
-
-  @Transactional
-  public JobApplicationDto createFromIndeed(final CreateJobApplicationFromIndeedRequest request) {
-    final User user = currentUserService.getCurrentUser();
-    final UserPreference pref = userPreferenceService.getUserPreferences();
-
-    final String jobUrl = request.getJobLink();
-
-    if (!IndeedJobUrlValidator.isValid(jobUrl)) {
-      throw new IllegalArgumentException("Invalid Indeed job URL");
-    }
-
-    final Resume resume =
-        resumeRepository
-            .findById(request.getLinkedResumeId())
-            .filter(r -> r.getUser().equals(user))
-            .orElseThrow(() -> new IllegalArgumentException(INVALID_RESUME_ID));
-
-    final JobApplication jobApplication = jobApplicationMapper.toEntity(request, resume);
-    jobApplication.setUser(user);
-    jobApplication.setAppliedDate(
-        dateRepresentationFactory.parseFrontendLocalDate(request.getAppliedDate()));
-
-    repository.save(jobApplication);
-
-    final String snapshotId = brightDataService.createSnapshot(jobUrl).getSnapshotId();
-
-    jobApplication.setSnapshotId(snapshotId);
-
-    return jobApplicationMapper.toDto(jobApplication, pref);
-  }
-
-  @Override
-  public JobApplicationRequest createFromLink(@Nonnull final String jobUrl) {
-
-    try {
-      final String jobText = jobScraperService.extractJobText(jobUrl);
-
-      return jobApplicationAiService.extractFromUrl(jobUrl, jobText);
-    } catch (final Exception exception) {
-
-      log.warn("Could not extract job text from link={}", jobUrl);
-
-      throw exception;
-    }
   }
 
   @Transactional(readOnly = true)

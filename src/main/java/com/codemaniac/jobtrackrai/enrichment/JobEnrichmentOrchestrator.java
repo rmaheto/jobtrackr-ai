@@ -26,8 +26,9 @@ public class JobEnrichmentOrchestrator {
 
     final JobSource source = request.getJobSource().orElse(JobSourceDetector.fromUrl(sanitizedUrl));
 
-    registry.get(source).triggerScrape(sanitizedUrl, job.getId());
+    final String snapshotId = registry.get(source).triggerScrape(sanitizedUrl, job.getId(), source);
 
+    job.setSnapshotId(snapshotId);
     job.setEnrichmentStatus(EnrichmentStatus.PENDING_ENRICHMENT);
   }
 }

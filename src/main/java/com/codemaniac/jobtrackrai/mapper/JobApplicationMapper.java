@@ -5,7 +5,6 @@ import com.codemaniac.jobtrackrai.entity.JobApplication;
 import com.codemaniac.jobtrackrai.entity.Resume;
 import com.codemaniac.jobtrackrai.entity.UserPreference;
 import com.codemaniac.jobtrackrai.enums.EnrichmentStatus;
-import com.codemaniac.jobtrackrai.enums.Status;
 import com.codemaniac.jobtrackrai.factory.DateRepresentationFactory;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -81,30 +80,6 @@ public class JobApplicationMapper {
     job.setContactPersonEmail(request.getContactPersonEmail().orElse(null));
     job.setSkills(request.getSkills().orElse(null));
 
-    job.setResume(linkedResume);
-
-    return job;
-  }
-
-  public JobApplication toEntity(
-      final CreateJobApplicationFromIndeedRequest request, final Resume linkedResume) {
-    if (request == null) return null;
-
-    final JobApplication job = new JobApplication();
-
-    job.setCompany(request.getCompany());
-    job.setDescription(request.getDescription());
-    job.setNotes(request.getNotes());
-    job.setJobType(request.getJobType());
-    job.setRole(request.getRole());
-    job.setLocation(request.getLocation());
-    job.setJobLink(request.getJobLink());
-    job.setSalary(request.getSalary());
-    job.setContactPersonName(request.getContactPersonName());
-    job.setContactPersonEmail(request.getContactPersonEmail());
-    job.setSkills(request.getSkills());
-    job.setStatus(Status.APPLIED);
-    job.setEnrichmentStatus(EnrichmentStatus.PENDING_ENRICHMENT);
     job.setResume(linkedResume);
 
     return job;

@@ -1,7 +1,7 @@
 package com.codemaniac.jobtrackrai.mapper;
 
-import com.codemaniac.jobtrackrai.dto.IndeedJobSnapshotResponse;
 import com.codemaniac.jobtrackrai.dto.JobSnapshotDto;
+import com.codemaniac.jobtrackrai.dto.brightdata.IndeedJobSnapshotResponse;
 import java.time.Instant;
 
 public final class IndeedJobSnapshotMapper {
