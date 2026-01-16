@@ -1,5 +1,6 @@
 package com.codemaniac.jobtrackrai.exception;
 
+import com.codemaniac.jobtrackrai.model.ApiResponse;
 import com.codemaniac.jobtrackrai.model.Error;
 import com.codemaniac.jobtrackrai.model.Errors;
 import java.util.List;
@@ -33,6 +34,12 @@ public class ApiExceptionHandler {
   @ExceptionHandler(BadRequestException.class)
   public ResponseEntity<Errors> handleBadRequest(final BadRequestException ex) {
     return build(HttpStatus.BAD_REQUEST, "BAD_REQUEST", ex.getMessage(), null);
+  }
+
+  @ExceptionHandler(BillingException.class)
+  public ResponseEntity<ApiResponse<Void>> handleBilling(final BillingException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.of("ERROR", ex.getMessage(), null));
   }
 
   @ExceptionHandler(Exception.class)

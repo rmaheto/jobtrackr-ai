@@ -40,6 +40,9 @@ public class User implements Auditable {
   @Column(unique = true, nullable = false)
   private String externalId;
 
+  @Column(name = "stripe_customer_id", unique = true)
+  private String stripeCustomerId;
+
   private String email;
   private String name;
   private String pictureUrl;

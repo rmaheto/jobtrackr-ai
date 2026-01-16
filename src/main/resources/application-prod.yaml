@@ -29,4 +29,12 @@ app:
 brightdata:
   webhook-callback-url: https://api.jobtrackrpro.com/webhooks/brightdata
 
+stripe:
+  secret-key: ${STRIPE_API.key}
+  checkout:
+    success-url: https://app.jobtrackrpro.com/account?checkout=success
+    cancel-url: https://app.jobtrackrpro.com/account?checkout=cancelled
+  webhook:
+    secret: ${STRIPE_WEBHOOK_SECRET}
+
 
