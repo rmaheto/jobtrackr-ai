@@ -1,7 +1,6 @@
 package com.codemaniac.jobtrackrai.service.billing;
 
 import com.codemaniac.jobtrackrai.entity.User;
-import com.codemaniac.jobtrackrai.enums.PlanCode;
 import com.codemaniac.jobtrackrai.repository.SubscriptionRepository;
 import java.time.Clock;
 import java.time.Instant;
@@ -15,10 +14,10 @@ public class UserPlanService {
   private final SubscriptionRepository subscriptionRepository;
   private final Clock clock;
 
-  public PlanCode getEffectivePlan(final User user) {
+  public String getEffectivePlan(final User user) {
     return subscriptionRepository
         .findActiveByUserId(user.getId(), Instant.now(clock))
         .map(sub -> sub.getPlan().getCode())
-        .orElse(PlanCode.FREE);
+        .orElse("FREE");
   }
 }

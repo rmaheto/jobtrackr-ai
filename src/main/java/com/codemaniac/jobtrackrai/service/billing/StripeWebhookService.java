@@ -51,6 +51,8 @@ public class StripeWebhookService {
 
       case "customer.subscription.deleted" -> subscriptionService.cancelFromProvider(event);
 
+      case "price.created", "price.updated" -> subscriptionService.syncPrice(event);
+
       default -> log.debug("Unhandled Stripe event {}", event.getType());
     }
   }

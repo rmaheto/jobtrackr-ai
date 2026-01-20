@@ -46,8 +46,9 @@ class SubscriptionServiceTest {
   @Test
   void syncFromProvider_whenSubscriptionExists_updatesAndSaves() {
 
+    final Plan plan = Plan.builder().stripePriceId("price_123").build();
     final ProviderSubscription dto = providerDto("active");
-    final Subscription existing = Subscription.builder().build();
+    final Subscription existing = Subscription.builder().plan(plan).build();
 
     when(subscriptionRepository.findByProviderSubscriptionId(dto.subscriptionId()))
         .thenReturn(Optional.of(existing));
@@ -69,12 +70,12 @@ class SubscriptionServiceTest {
 
     final ProviderSubscription dto = providerDto("trialing");
     final User user = new User();
-    final Plan plan = new Plan();
+    final Plan plan = Plan.builder().stripePriceId("stripePriceId").build();
 
     when(subscriptionRepository.findByProviderSubscriptionId(dto.subscriptionId()))
         .thenReturn(Optional.empty());
     when(userRepository.findByStripeCustomerId(dto.customerId())).thenReturn(Optional.of(user));
-    when(planRepository.findByStripePriceId(dto.priceId())).thenReturn(Optional.of(plan));
+    when(planRepository.findActiveByStripePriceId(dto.priceId())).thenReturn(Optional.of(plan));
 
     try (final MockedStatic<StripeMapper> mapper = mockStatic(StripeMapper.class)) {
       mapper.when(() -> StripeMapper.toSubscription(event)).thenReturn(dto);
@@ -113,7 +114,7 @@ class SubscriptionServiceTest {
     when(subscriptionRepository.findByProviderSubscriptionId(dto.subscriptionId()))
         .thenReturn(Optional.empty());
     when(userRepository.findByStripeCustomerId(dto.customerId())).thenReturn(Optional.of(user));
-    when(planRepository.findByStripePriceId(dto.priceId())).thenReturn(Optional.empty());
+    when(planRepository.findActiveByStripePriceId(dto.priceId())).thenReturn(Optional.empty());
 
     try (final MockedStatic<StripeMapper> mapper = mockStatic(StripeMapper.class)) {
       mapper.when(() -> StripeMapper.toSubscription(event)).thenReturn(dto);

@@ -32,8 +32,8 @@ brightdata:
 stripe:
   secret-key: ${STRIPE_API.key}
   checkout:
-    success-url: https://app.jobtrackrpro.com/account?checkout=success
-    cancel-url: https://app.jobtrackrpro.com/account?checkout=cancelled
+    success-url: ${app.frontend.url}/account?checkout=success
+    cancel-url: ${app.frontend.url}/account?checkout=cancelled
   webhook:
     secret: ${STRIPE_WEBHOOK_SECRET}
 

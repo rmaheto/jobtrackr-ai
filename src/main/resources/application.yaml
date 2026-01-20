@@ -126,8 +126,8 @@ google:
 stripe:
   secret-key: ${STRIPE_API.key}
   checkout:
-    success-url: https://circularly-capillaceous-lieselotte.ngrok-free.dev/account?checkout=success
-    cancel-url: https://circularly-capillaceous-lieselotte.ngrok-free.dev/account?checkout=cancelled
+    success-url: ${app.frontend.url}/account?checkout=success
+    cancel-url: ${app.frontend.url}/account?checkout=cancelled
   webhook:
     secret: ${STRIPE_WEBHOOK_SECRET}
 
@@ -145,5 +145,7 @@ brightdata:
   glassdoor:
     dataset-id: gd_l7j0bx501ockwldaqf
 
+billing:
+  product-name: Jobtrackr
 
 

@@ -8,7 +8,6 @@ import com.codemaniac.jobtrackrai.dto.billing.StripePaymentMethodService;
 import com.codemaniac.jobtrackrai.entity.Plan;
 import com.codemaniac.jobtrackrai.entity.Subscription;
 import com.codemaniac.jobtrackrai.entity.User;
-import com.codemaniac.jobtrackrai.enums.PlanCode;
 import com.codemaniac.jobtrackrai.enums.SubscriptionStatus;
 import com.codemaniac.jobtrackrai.exception.BillingException;
 import com.codemaniac.jobtrackrai.repository.PlanRepository;
@@ -39,7 +38,7 @@ public class BillingService {
   @Value("${stripe.checkout.cancel-url}")
   private String cancelUrl;
 
-  @Value("${app.url}")
+  @Value("${app.frontend.url}")
   private String appUrl;
 
   private final PlanRepository planRepository;
@@ -55,11 +54,11 @@ public class BillingService {
         .map(
             plan ->
                 PlanResponse.builder()
-                    .code(plan.getCode().name())
+                    .code(plan.getCode())
                     .name(plan.getName())
                     .priceAmount(plan.getPriceAmount())
                     .currency(plan.getCurrency())
-                    .billingInterval(plan.getBillingInterval().name().toLowerCase())
+                    .billingInterval(plan.getBillingInterval().toLowerCase())
                     .features(resolveFeatures(plan.getCode()))
                     .build())
         .toList();
@@ -72,13 +71,14 @@ public class BillingService {
     }
 
     try {
-      final Session session =
-          Session.create(
-              SessionCreateParams.builder()
-                  .setCustomer(user.getStripeCustomerId())
-                  .setReturnUrl(appUrl + "/billing")
-                  .build());
+      final com.stripe.param.billingportal.SessionCreateParams params =
+          com.stripe.param.billingportal.SessionCreateParams.builder()
+              .setCustomer(user.getStripeCustomerId())
+              .setReturnUrl(appUrl + "/account?portal=return")
+              .build();
 
+      final com.stripe.model.billingportal.Session session =
+          com.stripe.model.billingportal.Session.create(params);
       return session.getUrl();
 
     } catch (final StripeException e) {
@@ -88,10 +88,18 @@ public class BillingService {
   }
 
   @Transactional
-  public String createCheckoutSession(final User user, final PlanCode planCode) {
+  public String createCheckoutSession(final User user, final String planCode) {
 
-    if (planCode == PlanCode.FREE) {
-      throw new IllegalArgumentException("FREE plan cannot be purchased");
+    subscriptionRepository
+        .findActiveByUserId(user.getId(), Instant.now())
+        .ifPresent(
+            s -> {
+              throw new BillingException(
+                  "User already has an active subscription. Use billing portal instead.");
+            });
+
+    if ("free".equalsIgnoreCase(planCode)) {
+      throw new BillingException("FREE plan cannot be purchased");
     }
 
     final Plan plan =
@@ -124,7 +132,7 @@ public class BillingService {
                       .setQuantity(1L)
                       .build())
               .putMetadata("userId", user.getId().toString())
-              .putMetadata("planCode", planCode.name())
+              .putMetadata("planCode", planCode)
               .build();
 
       final Session session = Session.create(params);
@@ -188,10 +196,10 @@ public class BillingService {
 
     return BillingSummaryResponse.builder()
         .planName(plan.getName())
-        .planCode(plan.getCode().name())
+        .planCode(plan.getCode())
         .priceAmount(plan.getPriceAmount())
         .currency(plan.getCurrency())
-        .billingInterval(plan.getBillingInterval().name())
+        .billingInterval(plan.getBillingInterval())
         .status(subscription.getStatus().name().toLowerCase())
         .currentPeriodEnd(subscription.getCurrentPeriodEnd())
         .nextBillingDate(subscription.getCurrentPeriodEnd())
@@ -221,17 +229,19 @@ public class BillingService {
     }
   }
 
-  private List<String> resolveFeatures(final PlanCode code) {
+  private List<String> resolveFeatures(final String code) {
     return switch (code) {
-      case FREE -> List.of("Limited Applications");
-      case PRO_MONTHLY, PRO_YEARLY ->
+      case "FREE" -> List.of("Limited Applications");
+      case "PRO_MONTHLY", "PRO_YEARLY" ->
           List.of(
               "Unlimited Applications",
               "Advanced Analytics",
               "Resume Builder",
               "Interview Scheduler");
-      case TEAM_MONTHLY, TEAM_YEARLY ->
+      case "TEAM_MONTHLY", "TEAM_YEARLY" ->
           List.of("Everything in Pro", "Team Management", "Custom Integrations");
+
+      default -> List.of();
     };
   }
 }

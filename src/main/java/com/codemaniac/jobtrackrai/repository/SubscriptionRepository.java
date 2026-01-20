@@ -11,12 +11,14 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 
   @Query(
       """
-      select s
-      from Subscription s
-      where s.user.id = :userId
-        and s.status in ('ACTIVE', 'TRIALING')
-        and (s.currentPeriodEnd is null or s.currentPeriodEnd > :now)
-  """)
+  select s
+  from Subscription s
+  join fetch s.plan p
+  join fetch s.user u
+  where u.id = :userId
+    and s.status in ('ACTIVE', 'TRIALING')
+    and (s.currentPeriodEnd is null or s.currentPeriodEnd > :now)
+""")
   Optional<Subscription> findActiveByUserId(
       @Param("userId") Long userId, @Param("now") Instant now);
 
