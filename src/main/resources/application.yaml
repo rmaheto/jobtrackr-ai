@@ -124,10 +124,12 @@ google:
     app-name: JobTrackr Pro
 
 stripe:
-  apiKey: ${STRIPE_API.key}
-  webhook-secret: ${WEBHOOK_SECRET.key}
-  success-url: https://app.jobtrackrpro.com/account?checkout=success
-  cancel-url: https://app.jobtrackrpro.com/account?checkout=cancelled
+  secret-key: ${STRIPE_API.key}
+  checkout:
+    success-url: ${app.frontend.url}/account?checkout=success
+    cancel-url: ${app.frontend.url}/account?checkout=cancelled
+  webhook:
+    secret: ${STRIPE_WEBHOOK_SECRET}
 
 brightdata:
   base-url: https://api.brightdata.com
@@ -143,5 +145,7 @@ brightdata:
   glassdoor:
     dataset-id: gd_l7j0bx501ockwldaqf
 
+billing:
+  product-name: Jobtrackr
 
 

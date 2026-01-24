@@ -3,8 +3,10 @@ package com.codemaniac.jobtrackrai.controller;
 import com.codemaniac.jobtrackrai.dto.UserDto;
 import com.codemaniac.jobtrackrai.entity.User;
 import com.codemaniac.jobtrackrai.service.CurrentUserService;
+import com.codemaniac.jobtrackrai.service.billing.UserPlanService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,18 +18,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
   private final CurrentUserService currentUserService;
-
-  public AuthController(final CurrentUserService currentUserService) {
-    this.currentUserService = currentUserService;
-  }
+  private final UserPlanService userPlanService;
 
   @GetMapping("/me")
   public ResponseEntity<UserDto> me() {
     final User user = currentUserService.getCurrentUser();
-    return ResponseEntity.ok(new UserDto(user.getId(), user.getEmail(), user.getName()));
+    return ResponseEntity.ok(
+        new UserDto(
+            user.getId(), user.getEmail(), user.getName(), userPlanService.getEffectivePlan(user)));
   }
 
   @PostMapping("/logout")

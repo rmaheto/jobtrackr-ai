@@ -67,7 +67,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     currentUserService.save(user);
 
     final String token = jwtTokenService.generateToken(user);
-    log.info("User {} authenticated via {} and issued JWT", user.getEmail(), user.getProvider());
+    log.debug("User {} authenticated via {} and issued JWT", user.getEmail(), user.getProvider());
 
     final String redirectUrl = redirectBaseUrl + "/oauth/callback?token=" + token;
     response.sendRedirect(redirectUrl);
