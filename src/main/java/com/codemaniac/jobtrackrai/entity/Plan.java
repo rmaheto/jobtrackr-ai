@@ -1,11 +1,20 @@
 package com.codemaniac.jobtrackrai.entity;
 
+import com.codemaniac.jobtrackrai.enums.Feature;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -51,6 +60,12 @@ public class Plan {
 
   @Column(name = "active", nullable = false)
   private boolean active = true;
+
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(name = "plan_features", joinColumns = @JoinColumn(name = "plan_id"))
+  @Enumerated(EnumType.STRING)
+  @Column(name = "feature_code", nullable = false)
+  private Set<Feature> features = new HashSet<>();
 
   public void mergeFrom(final Plan source) {
     this.stripePriceId = source.stripePriceId;

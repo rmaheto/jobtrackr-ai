@@ -1,5 +1,6 @@
 package com.codemaniac.jobtrackrai.dto.billing;
 
+import com.codemaniac.jobtrackrai.dto.FeatureResponse;
 import java.time.Instant;
 import java.util.List;
 import lombok.Builder;
@@ -23,7 +24,7 @@ public class BillingSummaryResponse {
 
   private PaymentMethodSummary paymentMethod;
 
-  private List<String> features;
+  private List<FeatureResponse> features;
 
   private boolean canCancel;
   private boolean canUpgrade;

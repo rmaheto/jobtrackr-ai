@@ -1,5 +1,6 @@
 package com.codemaniac.jobtrackrai.service.billing;
 
+import com.codemaniac.jobtrackrai.dto.FeatureResponse;
 import com.codemaniac.jobtrackrai.dto.billing.BillingSummaryResponse;
 import com.codemaniac.jobtrackrai.dto.billing.InvoiceSummary;
 import com.codemaniac.jobtrackrai.dto.billing.PaymentMethodSummary;
@@ -8,6 +9,7 @@ import com.codemaniac.jobtrackrai.dto.billing.StripePaymentMethodService;
 import com.codemaniac.jobtrackrai.entity.Plan;
 import com.codemaniac.jobtrackrai.entity.Subscription;
 import com.codemaniac.jobtrackrai.entity.User;
+import com.codemaniac.jobtrackrai.enums.Feature;
 import com.codemaniac.jobtrackrai.enums.SubscriptionStatus;
 import com.codemaniac.jobtrackrai.exception.BillingException;
 import com.codemaniac.jobtrackrai.repository.PlanRepository;
@@ -21,6 +23,7 @@ import jakarta.annotation.Nonnull;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,7 +62,7 @@ public class BillingService {
                     .priceAmount(plan.getPriceAmount())
                     .currency(plan.getCurrency())
                     .billingInterval(plan.getBillingInterval().toLowerCase())
-                    .features(resolveFeatures(plan.getCode()))
+                    .features(toFeatureResponses(plan.getFeatures()))
                     .build())
         .toList();
   }
@@ -175,13 +178,7 @@ public class BillingService {
         subscriptionRepository.findActiveByUserId(userId, Instant.now()).orElse(null);
 
     if (subscription == null) {
-      return BillingSummaryResponse.builder()
-          .planName("Free")
-          .planCode("FREE")
-          .status("FREE")
-          .canUpgrade(true)
-          .canCancel(false)
-          .build();
+      return buildFreeBillingSummary();
     }
 
     PaymentMethodSummary paymentMethodSummary = null;
@@ -203,7 +200,7 @@ public class BillingService {
         .status(subscription.getStatus().name().toLowerCase())
         .currentPeriodEnd(subscription.getCurrentPeriodEnd())
         .nextBillingDate(subscription.getCurrentPeriodEnd())
-        .features(resolveFeatures(plan.getCode()))
+        .features(toFeatureResponses(plan.getFeatures()))
         .paymentMethod(paymentMethodSummary)
         .canCancel(subscription.getStatus() == SubscriptionStatus.ACTIVE)
         .canUpgrade(true)
@@ -229,19 +226,23 @@ public class BillingService {
     }
   }
 
-  private List<String> resolveFeatures(final String code) {
-    return switch (code) {
-      case "FREE" -> List.of("Limited Applications");
-      case "PRO_MONTHLY", "PRO_YEARLY" ->
-          List.of(
-              "Unlimited Applications",
-              "Advanced Analytics",
-              "Resume Builder",
-              "Interview Scheduler");
-      case "TEAM_MONTHLY", "TEAM_YEARLY" ->
-          List.of("Everything in Pro", "Team Management", "Custom Integrations");
+  private BillingSummaryResponse buildFreeBillingSummary() {
+    final Plan freePlan =
+        planRepository
+            .findByCodeAndActiveTrue("FREE")
+            .orElseThrow(() -> new IllegalStateException("FREE plan not configured"));
 
-      default -> List.of();
-    };
+    return BillingSummaryResponse.builder()
+        .planName(freePlan.getName())
+        .planCode(freePlan.getCode())
+        .status("FREE")
+        .features(toFeatureResponses(freePlan.getFeatures()))
+        .canUpgrade(true)
+        .canCancel(false)
+        .build();
+  }
+
+  private List<FeatureResponse> toFeatureResponses(final Set<Feature> features) {
+    return features.stream().map(f -> new FeatureResponse(f.name(), f.getDisplayName())).toList();
   }
 }

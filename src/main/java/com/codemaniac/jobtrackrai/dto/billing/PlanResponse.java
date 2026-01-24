@@ -1,5 +1,6 @@
 package com.codemaniac.jobtrackrai.dto.billing;
 
+import com.codemaniac.jobtrackrai.dto.FeatureResponse;
 import java.util.List;
 import lombok.Builder;
 import lombok.Value;
@@ -12,5 +13,5 @@ public class PlanResponse {
   long priceAmount;
   String currency;
   String billingInterval;
-  List<String> features;
+  List<FeatureResponse> features;
 }
