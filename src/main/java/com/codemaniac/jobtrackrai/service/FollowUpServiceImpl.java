@@ -4,10 +4,12 @@ import com.codemaniac.jobtrackrai.dto.FollowUpDto;
 import com.codemaniac.jobtrackrai.dto.FollowUpRequest;
 import com.codemaniac.jobtrackrai.entity.FollowUp;
 import com.codemaniac.jobtrackrai.entity.JobApplication;
+import com.codemaniac.jobtrackrai.enums.Feature;
 import com.codemaniac.jobtrackrai.exception.NotFoundException;
 import com.codemaniac.jobtrackrai.mapper.FollowUpMapper;
 import com.codemaniac.jobtrackrai.repository.FollowUpRepository;
 import com.codemaniac.jobtrackrai.repository.JobApplicationRepository;
+import com.codemaniac.jobtrackrai.security.RequiresFeature;
 import com.codemaniac.jobtrackrai.service.calendar.CalendarIntegrationManager;
 import com.codemaniac.jobtrackrai.service.calendar.CalendarIntegrationService;
 import com.google.api.services.calendar.model.Event;
@@ -29,6 +31,7 @@ public class FollowUpServiceImpl implements FollowUpService {
   private final FollowUpMapper followUpMapper;
   private final CalendarIntegrationManager calendarManager;
 
+  @RequiresFeature({Feature.CALENDAR})
   @Transactional
   public FollowUpDto scheduleFollowUp(final Long applicationId, final FollowUpRequest request) {
     final JobApplication jobApplication =
@@ -72,14 +75,12 @@ public class FollowUpServiceImpl implements FollowUpService {
             .findById(followUpId)
             .orElseThrow(() -> new NotFoundException(followUpId));
 
-    // Update basic details
     followUp.setType(request.getType());
     followUp.setNotes(request.getNotes());
     followUp.setScheduledAt(request.getScheduledAt());
 
     final FollowUp saved = followUpRepository.save(followUp);
 
-    // If it’s linked to an external calendar, update there too
     updateCalendarEventIfLinked(saved);
 
     return followUpMapper.toDto(saved);

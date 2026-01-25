@@ -9,9 +9,11 @@ import com.codemaniac.jobtrackrai.entity.Resume;
 import com.codemaniac.jobtrackrai.entity.User;
 import com.codemaniac.jobtrackrai.entity.UserPreference;
 import com.codemaniac.jobtrackrai.enums.EnrichmentStatus;
+import com.codemaniac.jobtrackrai.enums.Feature;
 import com.codemaniac.jobtrackrai.enums.Status;
 import com.codemaniac.jobtrackrai.exception.BadRequestException;
 import com.codemaniac.jobtrackrai.exception.ExcelExportException;
+import com.codemaniac.jobtrackrai.exception.ForbiddenException;
 import com.codemaniac.jobtrackrai.exception.NotFoundException;
 import com.codemaniac.jobtrackrai.factory.DateRepresentationFactory;
 import com.codemaniac.jobtrackrai.mapper.JobApplicationMapper;
@@ -19,6 +21,7 @@ import com.codemaniac.jobtrackrai.model.Audit;
 import com.codemaniac.jobtrackrai.repository.JobApplicationRepository;
 import com.codemaniac.jobtrackrai.repository.JobApplicationSpecifications;
 import com.codemaniac.jobtrackrai.repository.ResumeRepository;
+import com.codemaniac.jobtrackrai.security.RequiresFeature;
 import jakarta.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -52,6 +55,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
   private final JobApplicationMapper jobApplicationMapper;
   private final DateRepresentationFactory dateRepresentationFactory;
   private final JobEnrichmentOrchestrator jobEnrichmentOrchestrator;
+  private final UserFeatureService userFeatureService;
 
   private static final String JOB_NOT_FOUND = "Job application not found id={}";
   private static final String INVALID_RESUME_ID = "Invalid resume id id={}";
@@ -61,6 +65,17 @@ public class JobApplicationServiceImpl implements JobApplicationService {
   public JobApplicationDto create(final JobApplicationRequest request) {
 
     final User user = currentUserService.getCurrentUser();
+    final Integer max = userFeatureService.maxApplications(user);
+
+    if (max != null) {
+      final long count =
+          repository.countByUserIdAndAudit_RecordStatus(user.getId(), Audit.RECORD_STATUS_ACTIVE);
+      if (count >= max) {
+        throw new ForbiddenException(
+            "Free plan allows up to " + max + " job applications. Upgrade to continue.");
+      }
+    }
+
     final UserPreference pref = userPreferenceService.getUserPreferences();
 
     log.debug("Creating job application for user={} with request{}", user.getEmail(), request);
@@ -246,6 +261,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             });
   }
 
+  @RequiresFeature({Feature.EXPORT_TO_EXCEL})
   @Override
   public byte[] exportToExcel(final JobApplicationSearchRequest request) {
     final User user = currentUserService.getCurrentUser();

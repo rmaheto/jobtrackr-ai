@@ -38,7 +38,6 @@ public class CalendarController {
 
   @PostMapping("/connect")
   public ResponseEntity<ApiResponse<String>> connectCalendar() {
-    // This endpoint mainly serves as a confirmation placeholder.
     return ResponseEntity.ok(
         ApiResponse.of("OK", "Google Calendar connected via OAuth2", "connected"));
   }

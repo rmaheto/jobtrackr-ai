@@ -3,6 +3,7 @@ package com.codemaniac.jobtrackrai.service;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -46,6 +47,7 @@ class ResumeServiceTest {
   @Mock private CloudFrontSigner cloudFrontSigner;
   @Mock private ResumeMapper resumeMapper;
   @Mock private UserPreferenceService userPreferenceService;
+  @Mock private UserFeatureService userFeatureService;
 
   @InjectMocks private ResumeService resumeService;
 
@@ -77,6 +79,9 @@ class ResumeServiceTest {
     when(resumeRepository.findByUserAndOriginalName(mockUser, "resume.pdf"))
         .thenReturn(Optional.empty());
     when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
+    when(userFeatureService.maxResumes(any())).thenReturn(2);
+    when(resumeRepository.countByUserIdAndAudit_RecordStatus(anyLong(), anyString()))
+        .thenReturn(1L);
 
     final ResumeDto dto = new ResumeDto();
     dto.setId(10L);
