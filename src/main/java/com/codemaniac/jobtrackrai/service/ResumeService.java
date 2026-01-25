@@ -52,7 +52,7 @@ public class ResumeService {
     final long resumeCount = resumeRepository.countByUserIdAndAudit_RecordStatus(user.getId(), "A");
 
     if (resumeCount >= userFeatureService.maxResumes(user)) {
-      throw new ForbiddenException("Resume upload limit reached");
+      throw new ForbiddenException("Resume upload limit for FREE plan reached");
     }
 
     final UserPreference pref = userPreferenceService.getUserPreferences();
