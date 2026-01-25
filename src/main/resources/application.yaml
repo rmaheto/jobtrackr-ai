@@ -8,7 +8,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: restart,health,info
+        include: shutdown,health,info
   endpoint:
     health:
       show-details: never
