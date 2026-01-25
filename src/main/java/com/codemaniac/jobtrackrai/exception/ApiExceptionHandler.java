@@ -38,8 +38,13 @@ public class ApiExceptionHandler {
 
   @ExceptionHandler(BillingException.class)
   public ResponseEntity<ApiResponse<Void>> handleBilling(final BillingException ex) {
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+    return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
         .body(ApiResponse.of("ERROR", ex.getMessage(), null));
+  }
+
+  @ExceptionHandler(ForbiddenException.class)
+  public ResponseEntity<Errors> handleForbiddenException(final ForbiddenException ex) {
+    return build(HttpStatus.FORBIDDEN, "FORBIDDEN", ex.getMessage(), null);
   }
 
   @ExceptionHandler(Exception.class)

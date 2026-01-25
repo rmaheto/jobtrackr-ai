@@ -6,6 +6,7 @@ import com.codemaniac.jobtrackrai.entity.Resume;
 import com.codemaniac.jobtrackrai.entity.User;
 import com.codemaniac.jobtrackrai.entity.UserPreference;
 import com.codemaniac.jobtrackrai.enums.ResumeFileType;
+import com.codemaniac.jobtrackrai.exception.ForbiddenException;
 import com.codemaniac.jobtrackrai.exception.S3UploadException;
 import com.codemaniac.jobtrackrai.mapper.ResumeMapper;
 import com.codemaniac.jobtrackrai.repository.ResumeRepository;
@@ -31,6 +32,7 @@ public class ResumeService {
   private final S3Service s3Service;
   private final CurrentUserService currentUserService;
   private final UserPreferenceService userPreferenceService;
+  private final UserFeatureService userFeatureService;
   private final CloudFrontSigner cloudFrontSigner;
   private final ResumeMapper resumeMapper;
 
@@ -46,6 +48,13 @@ public class ResumeService {
     validateFile(file);
 
     final User user = currentUserService.getCurrentUser();
+
+    final long resumeCount = resumeRepository.countByUserIdAndAudit_RecordStatus(user.getId(), "A");
+
+    if (resumeCount >= userFeatureService.maxResumes(user)) {
+      throw new ForbiddenException("Resume upload limit reached");
+    }
+
     final UserPreference pref = userPreferenceService.getUserPreferences();
 
     final Resume resume =

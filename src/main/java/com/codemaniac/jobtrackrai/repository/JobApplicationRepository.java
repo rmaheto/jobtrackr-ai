@@ -21,4 +21,6 @@ public interface JobApplicationRepository
   Optional<JobApplication> findBySnapshotId(String snapshotId);
 
   Optional<JobApplication> findByJobLink(String jobLink);
+
+  long countByUserIdAndAudit_RecordStatus(Long id, String status);
 }

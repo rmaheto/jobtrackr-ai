@@ -67,6 +67,12 @@ public class Plan {
   @Column(name = "feature_code", nullable = false)
   private Set<Feature> features = new HashSet<>();
 
+  @Column(name = "max_applications")
+  private Integer maxApplications;
+
+  @Column(name = "max_resumes")
+  private Integer maxResumes;
+
   public void mergeFrom(final Plan source) {
     this.stripePriceId = source.stripePriceId;
     this.code = source.code;

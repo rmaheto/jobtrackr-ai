@@ -4,7 +4,9 @@ import com.codemaniac.jobtrackrai.dto.JobApplicationRequest;
 import com.codemaniac.jobtrackrai.enrichment.strategy.JobScrapingStrategyRegistry;
 import com.codemaniac.jobtrackrai.entity.JobApplication;
 import com.codemaniac.jobtrackrai.enums.EnrichmentStatus;
+import com.codemaniac.jobtrackrai.enums.Feature;
 import com.codemaniac.jobtrackrai.enums.JobSource;
+import com.codemaniac.jobtrackrai.security.RequiresFeature;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ public class JobEnrichmentOrchestrator {
 
   private final JobScrapingStrategyRegistry registry;
 
+  @RequiresFeature({Feature.RUN_ENRICHMENT})
   public void maybeEnrich(final JobApplication job, final JobApplicationRequest request) {
 
     if (!request.getScrapeFromUrl().orElse(false)) {
